@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.env
+.env.*
+!.env.example
+runs/
+local/
+.DS_Store
+*.db
+*.db-wal
+*.db-shm
+# Kept locally; install docs/ci-tests.yml.example through an authorized workflow.
+.github/workflows/tests.yml

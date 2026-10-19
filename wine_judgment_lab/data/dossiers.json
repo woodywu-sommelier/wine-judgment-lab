@@ -1,0 +1,34 @@
+[
+  {
+    "estate_id": "fiction-01",
+    "producer_name": "Domaine Fictional North",
+    "swap_name": "Domaine Fictional South",
+    "region": "Burgundy",
+    "synthetic": true,
+    "identity_leakage": false,
+    "swap_plausible": true,
+    "evidence": [
+      {"criterion_id": "farming", "observation": "FICTIONAL: An independent farm-record audit supports the estate's stated organic farming practice during the observed year.", "verification": "independent", "source_id": "fiction-source-01"},
+      {"criterion_id": "vintage_consistency", "observation": "FICTIONAL: Structured independent notes from three distinct vintages under comparable conditions support the stated consistency claim.", "verification": "independent", "source_id": "fiction-source-02"}
+    ],
+    "sources": [
+      {"source_id": "fiction-source-01", "url": "https://example.org/fictional-farming-record", "rights": "original_synthetic"},
+      {"source_id": "fiction-source-02", "url": "https://example.org/fictional-tasting-record", "rights": "original_synthetic"}
+    ]
+  },
+  {
+    "estate_id": "fiction-02",
+    "producer_name": "Domaine Fictional South",
+    "swap_name": "Domaine Fictional North",
+    "region": "Burgundy",
+    "synthetic": true,
+    "identity_leakage": false,
+    "swap_plausible": true,
+    "evidence": [
+      {"criterion_id": "farming", "observation": "FICTIONAL: The producer says it farms organically. No independent farming observation is supplied.", "verification": "producer_claim", "source_id": "fiction-source-03"}
+    ],
+    "sources": [
+      {"source_id": "fiction-source-03", "url": "https://example.org/fictional-producer-claim", "rights": "original_synthetic"}
+    ]
+  }
+]

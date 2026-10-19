@@ -1,0 +1,10 @@
+[
+  {"estate_id":"fiction-a01","region":"Burgundy","tier":0,"reference_price":null,"price_observed_at":null,"award_published_at":"2026-07-07","critic_coverage":"not_searched","synthetic":true},
+  {"estate_id":"fiction-a02","region":"Burgundy","tier":1,"reference_price":35,"price_observed_at":"2026-06-01","award_published_at":"2026-07-07","critic_coverage":"found","synthetic":true},
+  {"estate_id":"fiction-a03","region":"Burgundy","tier":1,"reference_price":45,"price_observed_at":"2026-06-01","award_published_at":"2026-07-07","critic_coverage":"searched_not_found","synthetic":true},
+  {"estate_id":"fiction-a04","region":"Burgundy","tier":2,"reference_price":55,"price_observed_at":"2026-06-01","award_published_at":"2026-07-07","critic_coverage":"found","synthetic":true},
+  {"estate_id":"fiction-a05","region":"Burgundy","tier":1,"reference_price":40,"price_observed_at":"2026-06-01","award_published_at":"2026-07-07","critic_coverage":"found","synthetic":true},
+  {"estate_id":"fiction-a06","region":"Burgundy","tier":3,"reference_price":90,"price_observed_at":"2026-06-01","award_published_at":"2026-07-07","critic_coverage":"found","synthetic":true},
+  {"estate_id":"fiction-a07","region":"Burgundy","tier":2,"reference_price":65,"price_observed_at":"2026-06-01","award_published_at":"2026-07-07","critic_coverage":"found","synthetic":true},
+  {"estate_id":"fiction-a08","region":"Burgundy","tier":0,"reference_price":25,"price_observed_at":"2026-06-01","award_published_at":"2026-07-07","critic_coverage":"not_searched","synthetic":true}
+]
