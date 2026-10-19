@@ -12,7 +12,8 @@
 ## Next — data feasibility and registered pilot
 
 - [x] Confirm `woodywu-sommelier` as the owner on both services.
-- [ ] Finish GitHub code and Hugging Face synthetic dataset publication.
+- [x] Publish and verify the GitHub starter from a fresh public clone.
+- [ ] Complete Hugging Face login and publish the synthetic dataset.
 - [ ] Obtain a small real sample with comparable historical prices and a source ledger.
 - [ ] Define blind evidence review, sampling and swap-pairing process.
 - [ ] Finalize endpoints, model comparison, repeats, sample size and analysis.

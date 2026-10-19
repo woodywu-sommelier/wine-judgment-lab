@@ -18,13 +18,16 @@ the account's ordinary authenticated GitHub publication workflow. Never put a
 token in a URL or shell command. A local commit timestamp alone is not a
 preregistration; use a trusted immutable registration before real inference.
 
-## Hugging Face
-
 GitHub CI note: the saved publishing token lacks the `workflow` scope. The
 release therefore includes `docs/ci-tests.yml.example` rather than an active
 Actions workflow. To enable it later, add that file as
 `.github/workflows/tests.yml` using an account/session authorized to manage
 workflows. The local workflow copy remains preserved, and local tests passed.
+
+GitHub source publication is complete. A fresh clone of the public repository
+passed all 21 tests. Hosted Actions has not run.
+
+## Hugging Face
 
 Dataset destination: `woodywu-sommelier/wine-judgment-lab-synthetic`, type
 **dataset**. It is not a Jev model upload.
@@ -35,6 +38,10 @@ Run `python3 -m wine_judgment_lab demo --out runs/demo` once. The folder
 folder through an authenticated HF dataset repository. The card specifies an
 `example` split and states that no model call or real-world study occurred.
 Link the final GitHub and HF URLs in both descriptions after they exist.
+
+The prepared publication folder for the current upload is
+`runs/publication-demo/huggingface/`; it includes the verified GitHub source link.
+Sign in to `woodywu-sommelier` before creating the dataset and uploading it.
 
 HF documentation: https://huggingface.co/docs/hub/datasets-cards and
 https://huggingface.co/docs/hub/datasets-adding.

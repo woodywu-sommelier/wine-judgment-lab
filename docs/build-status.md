@@ -32,6 +32,14 @@ scope. The reviewed release retains CI as `docs/ci-tests.yml.example`; the
 active `.github/workflows/tests.yml` copy is preserved locally and excluded from
 the public commit. No permission was broadened and no remote history was overwritten.
 
-Next concrete step: finish publication of the original starter, then assemble a verified pilot dataset
+Publication verified: the public GitHub source at commit `6e5e174` was cloned
+into a fresh temporary directory and all 21 tests passed there (0.587 seconds).
+The remote `main` ref matched that published commit. The source is public and
+downloadable. Hosted CI remains inactive pending manual workflow installation.
+The final HF upload folder is `runs/publication-demo/huggingface/`, regenerated
+with the verified GitHub link. Hugging Face remains on its login page, so its
+dataset has not been created or uploaded.
+
+Next concrete step: complete Hugging Face login and dataset publication, then assemble a verified pilot dataset
 and register the real study before any paid inference. The publication guide
 and roadmap separate software demonstration from research findings.
