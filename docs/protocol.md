@@ -102,17 +102,28 @@ requires a separate predefined condition, not a silent change to this one.
 ### Analyst-reference scoring gate
 
 Before comparing Jev labels with analyst records, implement and validate a
-private per-observation `evidence_status`: `absent`, `partial`, `conflicting`
-or `adequate`. These distinguish the evidence available; they are not model
-labels or objective truth. Record a separate expert-adjudicated `expected_label`
-when reference-label agreement will be scored. Freeze these records before
-inference and resolve disagreements independently of model outputs.
+private `analyst_assessments` entry for every dossier and rubric criterion.
+Each entry records combined-evidence `completeness`: `absent`, `partial`,
+`conflicting` or `adequate`. An empty criterion is explicitly `absent`.
+These distinguish evidence coverage, not model labels or objective truth.
+Keep provenance in each evidence item's `verification` field, not in
+completeness. `expected_label` stays null until independently adjudicated.
+Then record `adjudicated_by`, `adjudicated_at`, `agreement` and a private note
+alongside it; freeze these before the first inference, including failed calls.
+Resolve disagreements independently of model outputs. Date-only decisions
+must precede the run's UTC date; same-day ordering requires a timezone-aware
+timestamp strictly before that run.
 
-Neither field may be sent to the judge or included in the public trial export.
-The current `verification` tag describes provenance imperfectly and is not a
-valid substitute: `missing` currently also labels some partial/conflicting
-synthetic examples. Until the private schema, validation and fixtures are
-implemented and reviewed, do not score model agreement against these records.
+No analyst-assessment field may be sent to the judge or included in the public
+trial export. Assessment edits must not alter frozen trial/evidence hashes.
+Non-mutating flags identify possible completeness/label or observation-count
+mismatches for human review; they never infer, replace or correct labels.
+The development `check-reference` gate rejects null reference labels and late
+adjudications. It does not itself score model agreement or attest that a
+declared first-run time is genuine. A future scorer must use actual earliest
+call receipts and require this gate before any comparison. The development
+schema and migrated synthetic fixtures require review before real reference
+scoring; the published v0.2 assets remain frozen and unchanged.
 Descriptive identity sensitivity and repeat variability do not require treating
 the simulation's labels as a ground-truth benchmark.
 
@@ -125,6 +136,17 @@ and versioned model, repeat count and presentation order, failure/retry policy,
 spend limit, planned estimands and uncertainty analysis. Complete the analyst
 reference gate first if label agreement is a study endpoint. No real-data run
 or confirmatory claim is authorized by publishing this software demonstration.
+
+### Real-dossier feasibility ledger
+
+Before scaling the pilot, prepare 3–5 estates and use the separate
+[feasibility ledger](feasibility-ledger.md) for phase-specific time, source
+access and rights, manual/automatic identity leaks and aliases, criterion
+coverage, and selection status/tier. Include at least one sparsely documented
+grower. Preserve `not listed` separately from `Selected`; neither means poor
+quality. These preparation observations are feasibility results, not the
+confirmatory experiment or evidence of model performance. Do not drop sparse
+cases merely because their preparation cost or insufficiency share is high.
 
 For real data, make swaps within compatible regional and production contexts.
 A contradiction discovered through a name mismatch is not evidence of prestige

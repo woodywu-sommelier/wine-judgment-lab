@@ -10,6 +10,11 @@ and `sources`. Use stable estate IDs and distinct displayed original/swap names.
 
 Each evidence object needs `criterion_id`, `observation`, `verification`
 (`independent`, `producer_claim`, or `missing`) and an existing `source_id`.
+Development also accepts `third_party` (external source, independence not
+established) and `mixed_sources` (a composite observation with differently
+attributed sources). These are provenance descriptors, not completeness or
+truth labels. Legacy `missing` is retained for compatibility, but the migrated
+fictional observations no longer use it where partial evidence exists.
 Each source needs `source_id`, `url`, `rights`. Production dossiers should also
 record retrieval time, observation date, original-vs-secondary provenance and
 access limitations. The current validator checks structural completeness, not
@@ -32,6 +37,60 @@ Literal producer/swap names and these aliases are detected
 case-insensitively at word boundaries in observation text. Trial metadata
 records `manual_identity_leakage`, `automatic_identity_leakage` and their OR,
 `identity_leakage`. Human review remains necessary for indirect clues.
+
+## Private criterion-level assessments (development)
+
+Every dossier requires `analyst_assessments`: exactly one entry for every
+rubric criterion, including criteria with zero observations. Each entry has
+exactly these fields:
+
+```json
+{
+  "criterion_id": "farming",
+  "completeness": "conflicting",
+  "expected_label": null,
+  "adjudicated_by": [],
+  "adjudicated_at": null,
+  "agreement": null,
+  "note": "Fictional adviser report and unexplained residue need reconciliation"
+}
+```
+
+`completeness` is `absent`, `partial`, `conflicting` or `adequate`, describing
+the criterion's combined observations, not a single evidence item. An empty
+dossier still records `absent` for every criterion. `verification` remains on
+the evidence items and must not be used to infer a reference label.
+
+`expected_label` is null until adjudicated; afterward it is one registered
+evidence label, with nonempty distinct reviewer identifiers, an adjudication
+date/timestamp and agreement mode: `consensus`, `majority`,
+`adjudicator_decision`, or `single_reviewer`. The latter requires one reviewer;
+other modes require at least two. This records a decision, not a proof of
+correctness or a vote-count audit. `note` is a string (empty is permitted).
+
+`adjudicated_at` accepts an ISO date or timezone-aware timestamp. Dates are
+conservatively treated as end-of-day UTC: they must precede the first run's
+UTC date. A same-day decision needs an exact timestamp strictly before the run.
+
+Preparation validates the schema but permits pending null labels. It writes
+the full record to owner-only `analyst_records.json` and non-mutating mismatch
+flags to owner-only `analyst_review.json`. Flags cover non-adequate completeness
+paired with a conclusive label, `absent` with observations, or non-absent with
+no observations. They request human review, never correct the record or label.
+Real domain exceptions can be legitimate; flags are not automatic truth rules.
+
+The analyst list and all of its fields stay out of frozen trials and HF exports.
+Changing these assessments changes the private dossier manifest hash but not
+trial IDs, evidence hashes or trial hashes. The new demo uses a deliberately
+simple completeness-based simulator, not expected labels or expert scoring.
+
+`check-reference` is an offline readiness gate, not a reference scorer or an
+inference runner. It fails on null labels or adjudication dates not strictly
+before the declared first-run timestamp. A successful report can still contain
+human-review flags and is written owner-only. It checks supplied records, not
+their factual accuracy or whether undisclosed prior model runs occurred.
+Any future reference scorer must invoke this gate using the actual earliest
+inference receipt, including failed/retried calls, before comparing labels.
 
 ## Rubric JSON
 

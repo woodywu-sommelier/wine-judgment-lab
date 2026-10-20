@@ -22,7 +22,8 @@
 
 ### Review follow-ups (not pilot blockers)
 
-- [ ] Distinguish absent evidence from partial/conflicting evidence in private analyst records.
+- [x] Development implementation of private criterion completeness and nullable adjudicated labels.
+- [ ] Review the private assessment schema before real reference scoring.
 - [ ] Restore held-out-label invariance coverage using an explicit frozen split at fitting time.
 - [ ] Copy frozen v0.1 export bytes directly rather than re-encoding parsed JSON.
 

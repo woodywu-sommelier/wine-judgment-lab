@@ -26,13 +26,30 @@ class CliTests(unittest.TestCase):
                              "8db5a7b7ddb76d1f0e2d5f7e278c57aed70aeceedaf4345b605b9049d3d6d125")
             revised = [json.loads(line) for line in (out / "huggingface" / "data" / "v0.2" / "trials.jsonl").read_text().splitlines()]
             self.assertEqual(len(revised), 20)
+            self.assertEqual(hashlib.sha256((out / "huggingface" / "data" / "v0.2" / "trials.jsonl").read_bytes()).hexdigest(),
+                             "7ca5825149fbd9620f2bafc92021e5dd16674432c8c24f51ea34a934e1af4ab8")
             for row in revised:
                 self.assertNotIn("verification", row["state_json"])
                 self.assertNotIn("verification", json.dumps(row))
+                for key in ("analyst_assessments", "completeness", "expected_label", "adjudicated_by", "adjudicated_at", "agreement"):
+                    self.assertNotIn(key, json.dumps(row))
+            trial_text = (out / "trials.jsonl").read_text()
+            for key in ("analyst_assessments", "completeness", "expected_label", "adjudicated_at", "adjudicated_by", "agreement"):
+                self.assertNotIn(key, trial_text)
             private = out / "analyst_records.json"
             records = json.loads(private.read_text())
             self.assertEqual(records[0]["evidence"][0]["verification"], "independent")
             self.assertEqual(private.stat().st_mode & 0o777, 0o600)
+            self.assertIsNone(records[0]["analyst_assessments"][0]["expected_label"])
+            self.assertEqual(records[2]["analyst_assessments"][0]["completeness"], "partial")
+            self.assertEqual(records[4]["analyst_assessments"][0]["completeness"], "conflicting")
+            self.assertEqual((out / "analyst_review.json").stat().st_mode & 0o777, 0o600)
+            trials = {row["trial_id"]: row for row in map(json.loads, trial_text.splitlines())}
+            judgments = list(map(json.loads, (out / "simulated_judgments.jsonl").read_text().splitlines()))
+            partial = [j for j in judgments if trials[j["trial_id"]]["estate_id"] == "fiction-04"
+                       and j["criterion_id"] == "vintage_consistency"]
+            self.assertEqual(len(partial), 8)
+            self.assertEqual({j["label"] for j in partial}, {"insufficient_evidence"})
             self.assertFalse(list((out / "huggingface").rglob("*analyst*")))
             self.assertTrue(all(json.loads(line)["synthetic"] for line in data))
             self.assertTrue((out / "huggingface" / "README.md").is_file())
@@ -62,6 +79,25 @@ class CliTests(unittest.TestCase):
             result = self.run_cli("prepare", "--dossiers", str(bad), "--rubric", str(bad), "--out", str(output))
             self.assertNotEqual(result.returncode, 0)
             self.assertFalse(output.exists())
+
+    def test_reference_check_rejects_pending_without_output_then_accepts_dated_adjudication(self):
+        from test_experiment import dossiers, rubric
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); data = root / "dossiers.json"; questions = root / "rubric.json"; out = root / "readiness.json"
+            rows = dossiers()
+            data.write_text(json.dumps(rows)); questions.write_text(json.dumps(rubric()))
+            args = ("check-reference", "--dossiers", str(data), "--rubric", str(questions),
+                    "--first-run-at", "2026-10-21T12:00:00Z", "--out", str(out))
+            result = self.run_cli(*args)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse(out.exists())
+            rows[0]["analyst_assessments"][0].update(expected_label="supported",
+                adjudicated_by=["Fictional reviewer"], adjudicated_at="2026-10-20", agreement="single_reviewer")
+            data.write_text(json.dumps(rows))
+            result = self.run_cli(*args)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(out.read_text())["assessment_count"], 1)
+            self.assertEqual(out.stat().st_mode & 0o777, 0o600)
 
 
 if __name__ == "__main__":

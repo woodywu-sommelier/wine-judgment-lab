@@ -8,8 +8,8 @@ import re
 from collections import defaultdict
 from datetime import datetime
 from itertools import combinations
+from .analyst import LABELS, validate_assessments
 
-LABELS = {"supported", "contradicted", "insufficient_evidence"}
 CONDITIONS = ("named", "anonymous", "neutral", "swapped")
 
 
@@ -52,7 +52,7 @@ def validate_dossiers(rows):
         for item in row["evidence"]:
             if not isinstance(item, dict) or any(not _text(item.get(k)) for k in ("criterion_id", "observation", "source_id")):
                 raise ValueError("Each observation needs criterion, text and source")
-            if item.get("verification") not in {"independent", "producer_claim", "missing"}:
+            if item.get("verification") not in {"independent", "producer_claim", "missing", "third_party", "mixed_sources"}:
                 raise ValueError("Unknown verification status")
             if item["source_id"] not in sources:
                 raise ValueError("Unknown evidence source")
@@ -79,6 +79,7 @@ def build_trials(rows, rubric, *, seed):
     criteria = _validate_rubric(rubric)
     trials = []
     for row in sorted(rows, key=lambda r: r["estate_id"]):
+        validate_assessments(row, criteria)
         observations = []
         for item in row["evidence"]:
             if item["criterion_id"] not in criteria:

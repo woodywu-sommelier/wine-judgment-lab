@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased — 0.3.0.dev0
+
+- Private criterion-level `analyst_assessments`, exactly one per rubric criterion,
+  explicit completeness and nullable expected labels with adjudication metadata.
+- Offline reference-readiness command: pending/late labels fail closed;
+  mismatch flags require human review but never alter a label.
+- Regression tests preserve all frozen trial fields across analyst edits and
+  exclude assessment fields from trial/HF exports.
+- Migrate ambiguous fictional records to partial/conflicting assessments and
+  provenance-only item tags. The toy simulator reads completeness, not provenance
+  or reference labels. Original v0.1 and v0.2 public trial bytes are unchanged.
+- Feasibility-ledger instructions for 3–5 real estates; no real collection,
+  inference, reference-agreement scoring or registration is included.
+
 ## 0.2.0 — published offline starter, 2026-10-20
 
 Reviewed source tag: [v0.2.0](https://github.com/woodywu-sommelier/wine-judgment-lab/tree/v0.2.0).
