@@ -88,17 +88,17 @@ will retain those distinctions and publish negative as well as positive results.
 ## Publication structure
 
 - **GitHub:** original software, protocol, tests, amendments and reproducibility.
-- **Hugging Face dataset:** permitted dossiers/trials with a dataset card and
-  grouping/split information. `runs/demo/huggingface/` is ready for a synthetic
-  starter dataset upload after review.
+- **Hugging Face dataset:** [six fictional identity trials](https://huggingface.co/datasets/woodywu-sommelier/wine-judgment-lab-synthetic)
+  with a dataset card, provenance hashes and an `example` split. The public
+  viewer is working; these are software examples, not research findings.
 - **Permanent reporting:** [woodywusommelier.com](https://woodywusommelier.com),
   with the narrative edition in *The Floor and the Terminal*.
 
 See [publication steps](docs/publication.md), [data dictionary](docs/data-dictionary.md)
 and [roadmap](ROADMAP.md). GitHub code lives at
 [woodywu-sommelier/wine-judgment-lab](https://github.com/woodywu-sommelier/wine-judgment-lab).
-The Hugging Face dataset destination is `woodywu-sommelier/wine-judgment-lab-synthetic`;
-its upload awaits authentication.
+The [Hugging Face dataset](https://huggingface.co/datasets/woodywu-sommelier/wine-judgment-lab-synthetic)
+is also public and links back to this code and protocol.
 
 ## Contributing
 

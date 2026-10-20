@@ -2,7 +2,7 @@
 
 Owner confirmed by Kendall: `woodywu-sommelier` on both services.
 GitHub repository created: https://github.com/woodywu-sommelier/wine-judgment-lab.
-Hugging Face dataset upload awaits authentication for that account.
+Hugging Face dataset published: https://huggingface.co/datasets/woodywu-sommelier/wine-judgment-lab-synthetic.
 
 ## GitHub
 
@@ -39,9 +39,11 @@ folder through an authenticated HF dataset repository. The card specifies an
 `example` split and states that no model call or real-world study occurred.
 Link the final GitHub and HF URLs in both descriptions after they exist.
 
-The prepared publication folder for the current upload is
-`runs/publication-demo/huggingface/`; it includes the verified GitHub source link.
-Sign in to `woodywu-sommelier` before creating the dataset and uploading it.
+The published folder is `runs/publication-demo/huggingface/`; its card includes
+the verified GitHub source link. Publication completed on 2026-10-20 at HF commit
+`73ec2e61a28e7075c746c8ea573342a7613429af`. Public downloads of the card and
+JSONL match the local export byte for byte. All six rows have `synthetic: true`.
+The Dataset Viewer renders the `example` split with six rows. No model was called.
 
 HF documentation: https://huggingface.co/docs/hub/datasets-cards and
 https://huggingface.co/docs/hub/datasets-adding.
