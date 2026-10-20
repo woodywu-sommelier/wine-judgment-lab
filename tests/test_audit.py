@@ -36,16 +36,13 @@ class AuditTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_audit(bad)
 
-    def test_heldout_truth_does_not_change_fitted_baseline(self):
+    def test_baseline_is_fit_only_on_training_tiers(self):
         from wine_judgment_lab.audit import evaluate_baseline, assign_splits
         original = rows()
         split = assign_splits(original, seed=19)
-        changed = copy.deepcopy(original)
-        for row in changed:
-            if split[row["estate_id"]] == "test": row["tier"] = 3
-        before = evaluate_baseline(original, seed=19)["regions"]["Burgundy"]
-        after = evaluate_baseline(changed, seed=19)["regions"]["Burgundy"]
-        self.assertEqual(before["training_modal_tier"], after["training_modal_tier"])
+        result = evaluate_baseline(original, seed=19)["regions"]["Burgundy"]
+        self.assertEqual(result["training_modal_tier"], 0)
+        self.assertEqual(result["training_tier_counts"], {0: 1, 1: 1, 2: 1, 3: 1})
 
     def test_tier_metrics_use_hand_checked_values(self):
         from wine_judgment_lab.audit import tier_metrics
@@ -59,6 +56,29 @@ class AuditTests(unittest.TestCase):
         bad = rows(); bad[0]["region"] = "Bordeaux"
         with self.assertRaises(ValueError):
             evaluate_baseline(bad, seed=19)
+
+    def test_every_non_singleton_tier_has_train_and_test_estates(self):
+        from wine_judgment_lab.audit import assign_splits
+        for seed in range(12):
+            data = rows() + [dict(rows()[3], estate_id="third-three")]
+            split = assign_splits(data, seed=seed)
+            for tier in range(4):
+                self.assertEqual({split[r["estate_id"]] for r in data if r["tier"] == tier}, {"train", "test"})
+
+    def test_singleton_is_retained_and_reported_not_evaluable(self):
+        from wine_judgment_lab.audit import evaluate_baseline
+        data = [r for r in rows() if r["estate_id"] != "fiction-7"]
+        result = evaluate_baseline(data, seed=19)
+        self.assertEqual(result["splits"]["fiction-3"], "train")
+        tier = result["regions"]["Burgundy"]["per_tier"][3]
+        self.assertEqual(tier, {"train_n": 1, "test_n": 0, "status": "not_evaluable", "heldout": None})
+
+    def test_all_singletons_have_no_heldout_score(self):
+        from wine_judgment_lab.audit import evaluate_baseline
+        region = evaluate_baseline(rows()[:4], seed=19)["regions"]["Burgundy"]
+        self.assertEqual(region["test_n"], 0)
+        self.assertIsNone(region["heldout"])
+        self.assertTrue(all(t["status"] == "not_evaluable" for t in region["per_tier"].values()))
 
 
 if __name__ == "__main__":

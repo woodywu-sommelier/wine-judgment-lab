@@ -49,6 +49,7 @@ def _prepare(rows, rubric, seed, out):
     trials = build_trials(rows, rubric, seed=seed)
     out.mkdir(mode=0o700, parents=True, exist_ok=False)
     _write(out / "trials.jsonl", trials, lines=True)
+    _write(out / "analyst_records.json", rows)
     _write(out / "manifest.json", {"version": __version__, "seed": seed, "dossiers_sha256": digest(rows),
            "rubric_sha256": digest(rubric), "trials_sha256": digest(trials), "trial_count": len(trials),
            "created_at": datetime.now(UTC).isoformat(), "api_calls": 0,
@@ -60,24 +61,27 @@ def _demo(out, seed):
     rows, rubric = _json(DATA / "dossiers.json"), _json(DATA / "rubric.json")
     trials = _prepare(rows, rubric, seed, out)
     judgments = []
-    for trial in trials:
-        for question in trial["questions"]:
-            # Deliberately simple simulation; this is neither a model nor empirical evidence.
-            criterion = question["criterion_id"]
-            supplied = [o for o in trial["state"]["observations"] if o["criterion_id"] == criterion]
-            label = "supported" if any(o["verification"] == "independent" for o in supplied) else "insufficient_evidence"
-            judgments.append({"trial_id": trial["trial_id"], "trial_hash": trial["trial_hash"],
-                 "criterion_id": criterion, "label": label, "provider": "simulated", "model": "synthetic-demo",
-                 "run_id": "offline-demo", "repeat_id": 0, "created_at": "2026-10-19T00:00:00Z"})
+    private = {r["estate_id"]: r for r in rows}
+    for repeat in range(2):
+        for trial in trials:
+            for question in trial["questions"]:
+                # Simulation reads private tags, never a live judge or empirical evidence.
+                criterion = question["criterion_id"]
+                supplied = [o for o in private[trial["estate_id"]]["evidence"] if o["criterion_id"] == criterion]
+                label = "supported" if any(o["verification"] == "independent" for o in supplied) else "insufficient_evidence"
+                judgments.append({"trial_id": trial["trial_id"], "trial_hash": trial["trial_hash"],
+                     "criterion_id": criterion, "label": label, "provider": "simulated", "model": "synthetic-demo",
+                     "run_id": "offline-demo", "repeat_id": repeat, "created_at": "2026-10-20T00:00:00Z"})
     _write(out / "simulated_judgments.jsonl", judgments, lines=True)
     _write(out / "summary.json", analyze(trials, judgments))
     _write(out / "audit_baseline.json", evaluate_baseline(_json(DATA / "audit.json"), seed=seed))
-    hf = out / "huggingface"; (hf / "data").mkdir(parents=True)
+    hf = out / "huggingface"; (hf / "data" / "v0.2").mkdir(parents=True)
     (hf / "README.md").write_text((DATA / "dataset_card.md").read_text(encoding="utf-8"), encoding="utf-8")
     export = [{k: v for k, v in trial.items() if k not in {"state", "questions"}} | {
         "state_json": json.dumps(trial["state"], sort_keys=True, ensure_ascii=False),
         "questions_json": json.dumps(trial["questions"], sort_keys=True, ensure_ascii=False)} for trial in trials]
-    _write(hf / "data" / "trials.jsonl", export, lines=True)
+    _write(hf / "data" / "trials.jsonl", _jsonl(DATA / "v01-trials.jsonl"), lines=True)
+    _write(hf / "data" / "v0.2" / "trials.jsonl", export, lines=True)
     return {"output": str(out), "data_kind": "synthetic", "api_calls": 0, "trials": len(trials), "judgments": len(judgments)}
 
 

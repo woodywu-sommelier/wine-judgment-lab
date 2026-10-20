@@ -13,14 +13,17 @@ reproducible model evaluation:
 
 ## Current status
 
-Version 0.1 is an **offline research starter**. It contains fictional estates,
+Version 0.2 is an **offline research starter**, currently under local review.
+The public v0.1 release remains frozen at [v0.1.0](https://github.com/woodywu-sommelier/wine-judgment-lab/releases/tag/v0.1.0).
+The starter contains fictional estates,
 original synthetic observations and simulated judgments. No real estate has
 been scored, no Jev call has run, no public dataset has been scraped, and there
 are no empirical findings about Michelin or model objectivity.
 
 Implemented: validated dossier inputs, deterministic identity variants, frozen
-input hashes, complete paired-judgment checks, leakage/plausibility subsets,
-region-specific held-out modal baselines, CLI, tests and Hugging Face export.
+input hashes, mandatory repeats, same-input variability, categorical transition
+tables, literal-name leakage flags, leakage/plausibility subsets, region/tier-
+stratified held-out modal baselines, CLI, tests and versioned Hugging Face export.
 CI is supplied as [a manual-install workflow example](docs/ci-tests.yml.example);
 the publishing credential cannot create Actions workflows, so hosted CI has not run.
 
@@ -39,9 +42,12 @@ python3 -m unittest discover -s tests -v
 python3 -m wine_judgment_lab demo --out runs/demo
 ```
 
-The demo creates six trials from two fictional estates, twelve **simulated**
-judgments, an analysis summary, a fictional held-out baseline, a manifest and a
-standalone Hugging Face dataset folder. All output paths refuse overwrite.
+The v0.2 demo creates twenty trials from five fictional estates, eighty
+**simulated** judgments (two repeats and two criteria), an analysis summary,
+a fictional held-out baseline, a manifest and a Hugging Face dataset folder.
+The export retains the original six rows and adds a separate `v0.2` config.
+All output paths refuse overwrite. `analyst_records.json` retains private
+verification tags locally with owner-only permissions; it is not exported.
 
 Recompute its results:
 
@@ -64,6 +70,11 @@ python3 -m wine_judgment_lab audit \
   --rows wine_judgment_lab/data/audit.json \
   --seed 19 --out runs/baseline.json
 ```
+
+The four conditions are named, anonymous, neutral invented name, and swapped.
+Neutral is a comparison cue, not a zero-identity baseline. `analyze` requires
+at least two complete repeats within every run. Its transition tables count
+label changes, not causal prestige bias or wine-quality gains.
 
 `prepare` never constructs a model client. Only the trial's `state` and
 `questions` are candidate judge inputs: estate IDs, source URLs, conditions and
@@ -94,7 +105,7 @@ will retain those distinctions and publish negative as well as positive results.
 - **Permanent reporting:** [woodywusommelier.com](https://woodywusommelier.com),
   with the narrative edition in *The Floor and the Terminal*.
 
-See [publication steps](docs/publication.md), [data dictionary](docs/data-dictionary.md)
+See [changelog](CHANGELOG.md), [publication steps](docs/publication.md), [data dictionary](docs/data-dictionary.md)
 and [roadmap](ROADMAP.md). GitHub code lives at
 [woodywu-sommelier/wine-judgment-lab](https://github.com/woodywu-sommelier/wine-judgment-lab).
 The [Hugging Face dataset](https://huggingface.co/datasets/woodywu-sommelier/wine-judgment-lab-synthetic)

@@ -1,4 +1,5 @@
 import json
+import hashlib
 from pathlib import Path
 import subprocess
 import sys
@@ -18,9 +19,21 @@ class CliTests(unittest.TestCase):
             summary = json.loads((out / "summary.json").read_text())
             self.assertEqual(summary["provider"], "simulated")
             self.assertEqual(summary["data_kind"], "synthetic")
-            self.assertEqual(summary["estate_count"], 2)
+            self.assertEqual(summary["estate_count"], 5)
             data = (out / "huggingface" / "data" / "trials.jsonl").read_text().splitlines()
             self.assertEqual(len(data), 6)
+            self.assertEqual(hashlib.sha256((out / "huggingface" / "data" / "trials.jsonl").read_bytes()).hexdigest(),
+                             "8db5a7b7ddb76d1f0e2d5f7e278c57aed70aeceedaf4345b605b9049d3d6d125")
+            revised = [json.loads(line) for line in (out / "huggingface" / "data" / "v0.2" / "trials.jsonl").read_text().splitlines()]
+            self.assertEqual(len(revised), 20)
+            for row in revised:
+                self.assertNotIn("verification", row["state_json"])
+                self.assertNotIn("verification", json.dumps(row))
+            private = out / "analyst_records.json"
+            records = json.loads(private.read_text())
+            self.assertEqual(records[0]["evidence"][0]["verification"], "independent")
+            self.assertEqual(private.stat().st_mode & 0o777, 0o600)
+            self.assertFalse(list((out / "huggingface").rglob("*analyst*")))
             self.assertTrue(all(json.loads(line)["synthetic"] for line in data))
             self.assertTrue((out / "huggingface" / "README.md").is_file())
             self.assertEqual(json.loads((out / "manifest.json").read_text())["api_calls"], 0)
