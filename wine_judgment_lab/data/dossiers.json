@@ -3,6 +3,7 @@
     "estate_id": "fiction-01",
     "producer_name": "Domaine Fictional North",
     "swap_name": "Domaine Fictional South",
+    "neutral_name": "Domaine A",
     "region": "Burgundy",
     "synthetic": true,
     "identity_leakage": false,
@@ -20,6 +21,7 @@
     "estate_id": "fiction-02",
     "producer_name": "Domaine Fictional South",
     "swap_name": "Domaine Fictional North",
+    "neutral_name": "Domaine B",
     "region": "Burgundy",
     "synthetic": true,
     "identity_leakage": false,
@@ -30,5 +32,32 @@
     "sources": [
       {"source_id": "fiction-source-03", "url": "https://example.org/fictional-producer-claim", "rights": "original_synthetic"}
     ]
+  },
+  {
+    "estate_id": "fiction-03", "producer_name": "Domaine Fictional East",
+    "swap_name": "Domaine Fictional West", "neutral_name": "Domaine C", "region": "Burgundy",
+    "synthetic": true, "identity_leakage": false, "swap_plausible": true,
+    "evidence": [
+      {"criterion_id": "farming", "observation": "FICTIONAL: A certification entry covers the estate's packing facility; it does not specify whether the vineyard parcels were inspected. The supplied document does not define its scope.", "verification": "missing", "source_id": "s3"}
+    ],
+    "sources": [{"source_id": "s3", "url": "https://example.org/fictional-certification-scope", "rights": "original_synthetic"}]
+  },
+  {
+    "estate_id": "fiction-04", "producer_name": "Domaine Fictional West",
+    "swap_name": "Domaine Fictional East", "neutral_name": "Domaine D", "region": "Burgundy",
+    "synthetic": true, "identity_leakage": false, "swap_plausible": true,
+    "evidence": [
+      {"criterion_id": "vintage_consistency", "observation": "FICTIONAL: A panel recorded consistent profiles in two vintages under matched conditions. A third note describes a tank sample without identifying its vintage or the panel conditions.", "verification": "missing", "source_id": "s4"}
+    ],
+    "sources": [{"source_id": "s4", "url": "https://example.org/fictional-two-vintages", "rights": "original_synthetic"}]
+  },
+  {
+    "estate_id": "fiction-05", "producer_name": "Domaine Fictional Hill",
+    "swap_name": "Domaine Fictional Vale", "neutral_name": "Domaine E", "region": "Burgundy",
+    "synthetic": true, "identity_leakage": false, "swap_plausible": true,
+    "evidence": [
+      {"criterion_id": "farming", "observation": "FICTIONAL: A grower-funded adviser reports no prohibited treatments. A laboratory reports a trace residue, but the report does not distinguish neighboring drift from application on the estate. No parcel-level inspection record is supplied.", "verification": "missing", "source_id": "s5"}
+    ],
+    "sources": [{"source_id": "s5", "url": "https://example.org/fictional-conflicting-records", "rights": "original_synthetic"}]
   }
 ]

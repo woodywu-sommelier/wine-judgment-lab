@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wine-judgment-lab"
-version = "0.1.0"
+version = "0.2.0"
 description = "Offline research tools for wine-assessment evidence and identity sensitivity"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -19,4 +19,4 @@ wine-judgment-lab = "wine_judgment_lab.__main__:main"
 include = ["wine_judgment_lab*"]
 
 [tool.setuptools.package-data]
-wine_judgment_lab = ["data/*.json", "data/*.md"]
+wine_judgment_lab = ["data/*.json", "data/*.jsonl", "data/*.md"]

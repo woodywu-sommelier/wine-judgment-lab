@@ -43,9 +43,11 @@ def assign_splits(rows, *, seed):
     for region, ids in sorted(regions.items()):
         if len(ids) < 2:
             raise ValueError(f"Region {region} needs at least two estates for a split")
-        ids.sort(key=lambda estate: hashlib.sha256(f"{seed}\0{region}\0{estate}".encode()).hexdigest())
-        test_count = max(1, len(ids) // 4)
-        result.update({estate: "test" if i < test_count else "train" for i, estate in enumerate(ids)})
+        for tier in range(4):
+            members = [r["estate_id"] for r in rows if r["region"] == region and r["tier"] == tier]
+            members.sort(key=lambda estate: hashlib.sha256(f"{seed}\0{region}\0{tier}\0{estate}".encode()).hexdigest())
+            test_count = max(1, len(members) // 4) if len(members) >= 2 else 0
+            result.update({estate: "test" if i < test_count else "train" for i, estate in enumerate(members)})
     return result
 
 
@@ -73,9 +75,16 @@ def evaluate_baseline(rows, *, seed):
         test = [r for r in rows if r["region"] == region and split[r["estate_id"]] == "test"]
         counts = Counter(r["tier"] for r in train)
         modal = min(counts, key=lambda label: (-counts[label], label))
+        per_tier = {}
+        for tier in range(4):
+            heldout = [r for r in test if r["tier"] == tier]
+            per_tier[tier] = {"train_n": counts[tier], "test_n": len(heldout),
+                              "status": "evaluable" if heldout else "not_evaluable",
+                              "heldout": tier_metrics([tier] * len(heldout), [modal] * len(heldout)) if heldout else None}
         regions[region] = {"training_modal_tier": modal, "train_n": len(train), "test_n": len(test),
                            "training_tier_counts": dict(sorted(counts.items())),
-                           "heldout": tier_metrics([r["tier"] for r in test], [modal] * len(test))}
+                           "per_tier": per_tier,
+                           "heldout": tier_metrics([r["tier"] for r in test], [modal] * len(test)) if test else None}
     return {"data_kind": "synthetic" if all(r["synthetic"] for r in rows) else "contains_real_data",
             "method": "training-only modal tier baseline; ordinal regression not fitted",
             "seed": seed, "splits": dict(sorted(split.items())), "regions": regions,

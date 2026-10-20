@@ -4,11 +4,13 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import re
 from collections import defaultdict
 from datetime import datetime
+from itertools import combinations
 
 LABELS = {"supported", "contradicted", "insufficient_evidence"}
-CONDITIONS = ("named", "anonymous", "swapped")
+CONDITIONS = ("named", "anonymous", "neutral", "swapped")
 
 
 def digest(value):
@@ -26,13 +28,14 @@ def validate_dossiers(rows):
     ids = set()
     for row in rows:
         if not isinstance(row, dict) or any(not _text(row.get(k)) for k in
-                                           ("estate_id", "producer_name", "swap_name", "region")):
+                                           ("estate_id", "producer_name", "swap_name", "neutral_name", "region")):
             raise ValueError("Dossier identity fields must be nonempty strings")
         if row["estate_id"] in ids:
             raise ValueError("Duplicate estate_id")
         ids.add(row["estate_id"])
-        if row["producer_name"] == row["swap_name"]:
-            raise ValueError("The swapped name must differ")
+        identities = [row[k].strip().casefold() for k in ("producer_name", "swap_name", "neutral_name")]
+        if len(set(identities + ["identity withheld"])) != 4:
+            raise ValueError("Named, swapped, neutral and withheld identities must differ")
         if any(type(row.get(k)) is not bool for k in ("synthetic", "identity_leakage", "swap_plausible")):
             raise ValueError("synthetic, identity_leakage and swap_plausible must be explicit booleans")
         if not isinstance(row.get("sources"), list) or not isinstance(row.get("evidence"), list):
@@ -78,14 +81,18 @@ def build_trials(rows, rubric, *, seed):
         for item in row["evidence"]:
             if item["criterion_id"] not in criteria:
                 raise ValueError("Evidence references an unknown criterion")
-            observations.append({"criterion_id": item["criterion_id"], "text": item["observation"],
-                                 "verification": item["verification"]})
-        observations.sort(key=lambda x: (x["criterion_id"], x["text"], x["verification"]))
+            observations.append({"criterion_id": item["criterion_id"], "text": item["observation"]})
+        observations.sort(key=lambda x: (x["criterion_id"], x["text"]))
+        automatic_leak = any(
+            re.search(r"(?<!\w)" + re.escape(row[key].strip()) + r"(?!\w)", observation["text"], re.IGNORECASE)
+            for observation in observations for key in ("producer_name", "swap_name"))
         for condition in CONDITIONS:
             trial_id = digest([seed, row["estate_id"], condition])[:24]
-            identity = {"named": row["producer_name"], "anonymous": "Identity withheld", "swapped": row["swap_name"]}[condition]
+            identity = {"named": row["producer_name"], "anonymous": "Identity withheld",
+                        "neutral": row["neutral_name"], "swapped": row["swap_name"]}[condition]
             trial = {"trial_id": trial_id, "estate_id": row["estate_id"], "condition": condition,
-                     "synthetic": row["synthetic"], "identity_leakage": row["identity_leakage"],
+                     "synthetic": row["synthetic"], "identity_leakage": row["identity_leakage"] or automatic_leak,
+                     "manual_identity_leakage": row["identity_leakage"], "automatic_identity_leakage": automatic_leak,
                      "swap_plausible": row["swap_plausible"], "evidence_hash": digest(observations),
                      "rubric_hash": digest(rubric), "state": {"producer_identity": identity,
                      "region": row["region"], "observations": copy.deepcopy(observations)},
@@ -126,7 +133,7 @@ def analyze(trials, judgments):
         index[trial["trial_id"]] = trial
         estate_conditions[trial["estate_id"]].add(trial["condition"])
     if any(conditions != set(CONDITIONS) for conditions in estate_conditions.values()):
-        raise ValueError("Every estate must have all three identity variants")
+        raise ValueError("Every estate must have all four identity variants")
     expected = {(t["trial_id"], q["criterion_id"]) for t in trials for q in t["questions"]}
     groups = defaultdict(dict)
     for row in judgments:
@@ -153,30 +160,61 @@ def analyze(trials, judgments):
     judges = {(g[0], g[1]) for g in groups}
     if len(judges) != 1:
         raise ValueError("Analyze each provider/model separately")
+    runs = defaultdict(list)
+    for group, values in groups.items():
+        runs[group[:3]].append(values)
+    if any(len(repeats) < 2 for repeats in runs.values()):
+        raise ValueError("Every model/run requires at least two repeats")
     by_estate = defaultdict(dict)
     for t in trials:
         by_estate[t["estate_id"]][t["condition"]] = t
-    aggregates = defaultdict(lambda: {"all": [], "clean": [], "swapped": [], "labels": []})
+    def aggregate():
+        return {"all": [], "clean": [], "swapped": [], "neutral": [], "labels": [],
+                "repeat": {c: [] for c in CONDITIONS},
+                "transitions": {"named_to_" + c: {a: {b: 0 for b in sorted(LABELS)} for a in sorted(LABELS)}
+                                for c in ("anonymous", "neutral", "swapped")}}
+    aggregates = defaultdict(aggregate)
     for values in groups.values():
         for variants in by_estate.values():
-            named, anonymous, swapped = (variants[c] for c in CONDITIONS)
+            named = variants["named"]
             for q in named["questions"]:
                 c = q["criterion_id"]
-                labels = [values[(t["trial_id"], c)] for t in (named, anonymous, swapped)]
+                labels = {condition: values[(t["trial_id"], c)] for condition, t in variants.items()}
                 agg = aggregates[c]
-                agg["all"].append(labels[0] != labels[1])
+                agg["all"].append(labels["named"] != labels["anonymous"])
+                agg["neutral"].append(labels["named"] != labels["neutral"])
                 if not named["identity_leakage"]:
-                    agg["clean"].append(labels[0] != labels[1])
+                    agg["clean"].append(labels["named"] != labels["anonymous"])
                 if named["swap_plausible"]:
-                    agg["swapped"].append(labels[2] != labels[0])
-                agg["labels"].extend(labels)
+                    agg["swapped"].append(labels["swapped"] != labels["named"])
+                agg["labels"].extend(labels.values())
+                for condition in ("anonymous", "neutral", "swapped"):
+                    if condition == "swapped" and not named["swap_plausible"]:
+                        continue
+                    agg["transitions"]["named_to_" + condition][labels["named"]][labels[condition]] += 1
+    for repeats in runs.values():
+        for first, second in combinations(repeats, 2):
+            for trial in trials:
+                for q in trial["questions"]:
+                    pair = (trial["trial_id"], q["criterion_id"])
+                    aggregates[q["criterion_id"]]["repeat"][trial["condition"]].append(first[pair] != second[pair])
     criteria = {c: {"paired_observations": len(a["all"]), "clean_paired_observations": len(a["clean"]),
                     "named_anonymous_disagreement_rate": _rate(a["all"]),
                     "clean_named_anonymous_disagreement_rate": _rate(a["clean"]),
                     "swapped_named_disagreement_rate": _rate(a["swapped"]),
+                    "named_neutral_disagreement_rate": _rate(a["neutral"]),
+                    "same_trial_disagreement_rate": _rate([v for values in a["repeat"].values() for v in values]),
+                    "same_trial_comparisons": sum(len(values) for values in a["repeat"].values()),
+                    "repeat_variability": {condition: {"comparisons": len(values), "disagreements": sum(values),
+                                                       "disagreement_rate": _rate(values)}
+                                           for condition, values in a["repeat"].items()},
+                    "transitions": a["transitions"],
                     "insufficient_evidence_rate": _rate([v == "insufficient_evidence" for v in a["labels"]])}
                 for c, a in sorted(aggregates.items())}
     return {"data_kind": "synthetic" if all(t["synthetic"] for t in trials) else "contains_real_data",
-            "estate_count": len(by_estate), "complete_runs": len(groups),
+            "estate_count": len(by_estate), "complete_runs": len(runs), "complete_repeat_sets": len(groups),
             "provider": next(iter(judges))[0], "model": next(iter(judges))[1], "criteria": criteria,
-            "interpretation": "Descriptive label sensitivity only; repeated pairs are not independent estates."}
+            "transition_axes": {"rows": "named label", "columns": "comparison-condition label"},
+            "transition_populations": {"named_to_anonymous": "all dossiers", "named_to_neutral": "all dossiers",
+                                       "named_to_swapped": "swap_plausible dossiers only"},
+            "interpretation": "Descriptive label sensitivity, not causal prestige bias. Neutral is a comparison cue, not zero identity. Repeated pairs are not independent estates."}
