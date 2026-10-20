@@ -9,7 +9,14 @@
 
 Reproduce v0.1 using the [frozen source release](https://github.com/woodywu-sommelier/wine-judgment-lab/releases/tag/v0.1.0)
 and [fixed dataset commit](https://huggingface.co/datasets/woodywu-sommelier/wine-judgment-lab-synthetic/tree/73ec2e61a28e7075c746c8ea573342a7613429af).
-The HF tag is pending; do not rewrite or squash history.
+The [HF v0.1.0 tag](https://huggingface.co/datasets/woodywu-sommelier/wine-judgment-lab-synthetic/tree/v0.1.0)
+also resolves to that fixed commit. Do not rewrite or squash history.
+
+Reviewed v0.2 source is tagged
+[v0.2.0](https://github.com/woodywu-sommelier/wine-judgment-lab/tree/v0.2.0).
+The separate `v0.2` dataset config and changelog card were published at
+[ba4d753](https://huggingface.co/datasets/woodywu-sommelier/wine-judgment-lab-synthetic/commit/ba4d753907058bc9adbc677be5a48663c0e643b6).
+Public downloads match the local export; the original six-row file is unchanged.
 
 Prepare a reviewed v0.2 export with:
 

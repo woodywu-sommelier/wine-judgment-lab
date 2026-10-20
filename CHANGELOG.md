@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.2.0 — local review, 2026-10-20
+## 0.2.0 — published offline starter, 2026-10-20
+
+Reviewed source tag: [v0.2.0](https://github.com/woodywu-sommelier/wine-judgment-lab/tree/v0.2.0).
+Dataset commit: [ba4d753](https://huggingface.co/datasets/woodywu-sommelier/wine-judgment-lab-synthetic/tree/ba4d753907058bc9adbc677be5a48663c0e643b6).
 
 - Judge observations omit analyst verification tags; prepare/demo preserve
   those tags in owner-only local analyst records, excluded from HF exports.
@@ -28,8 +31,8 @@ No real Jev inference, real estate ratings or confirmatory findings exist.
 Code: [release v0.1.0](https://github.com/woodywu-sommelier/wine-judgment-lab/releases/tag/v0.1.0),
 commit `6de068300bca3ed429baa0a55c3758523de3e482`.
 Dataset: [original commit](https://huggingface.co/datasets/woodywu-sommelier/wine-judgment-lab-synthetic/tree/73ec2e61a28e7075c746c8ea573342a7613429af).
-The readable HF tag is pending authenticated access; the fixed commit is the
-reproduction reference. Never force-push or squash this dataset's history.
+The readable [HF v0.1.0 tag](https://huggingface.co/datasets/woodywu-sommelier/wine-judgment-lab-synthetic/tree/v0.1.0)
+resolves to that same fixed commit. Never force-push or squash this dataset's history.
 
 Two fictional dossiers, six trials, twelve simulated judgments, 21 tests.
 Known limitations motivated v0.2: judge-visible verification tags, no repeat

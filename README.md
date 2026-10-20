@@ -9,11 +9,12 @@ reproducible model evaluation:
 1. **What does the Grape rating add?** Study how predictable a published
    Michelin wine-estate tier is from information available before the award.
 2. **Does the name change the judgment?** Compare identical evidence under
-   named, anonymous and swapped producer identities.
+   named, anonymous, neutral invented-name and swapped producer identities.
 
 ## Current status
 
-Version 0.2 is an **offline research starter**, currently under local review.
+Version 0.2 is a published **offline research starter**; reviewed source is tagged
+[v0.2.0](https://github.com/woodywu-sommelier/wine-judgment-lab/tree/v0.2.0).
 The public v0.1 release remains frozen at [v0.1.0](https://github.com/woodywu-sommelier/wine-judgment-lab/releases/tag/v0.1.0).
 The starter contains fictional estates,
 original synthetic observations and simulated judgments. No real estate has
@@ -25,7 +26,7 @@ input hashes, mandatory repeats, same-input variability, categorical transition
 tables, literal-name leakage flags, leakage/plausibility subsets, region/tier-
 stratified held-out modal baselines, CLI, tests and versioned Hugging Face export.
 CI is supplied as [a manual-install workflow example](docs/ci-tests.yml.example);
-the publishing credential cannot create Actions workflows, so hosted CI has not run.
+hosted CI has not run.
 
 Next: real-data feasibility, finalized preregistration, budgeted Jev adapter,
 ordinal model, expert evidence review and pilot. [Protocol](docs/protocol.md)
@@ -99,9 +100,9 @@ will retain those distinctions and publish negative as well as positive results.
 ## Publication structure
 
 - **GitHub:** original software, protocol, tests, amendments and reproducibility.
-- **Hugging Face dataset:** [six fictional identity trials](https://huggingface.co/datasets/woodywu-sommelier/wine-judgment-lab-synthetic)
-  with a dataset card, provenance hashes and an `example` split. The public
-  viewer is working; these are software examples, not research findings.
+- **Hugging Face dataset:** [versioned fictional identity trials](https://huggingface.co/datasets/woodywu-sommelier/wine-judgment-lab-synthetic)
+  with six preserved v0.1 examples and twenty in config `v0.2`, a dataset card,
+  provenance hashes and `example` splits. These are software examples, not findings.
 - **Permanent reporting:** [woodywusommelier.com](https://woodywusommelier.com),
   with the narrative edition in *The Floor and the Terminal*.
 

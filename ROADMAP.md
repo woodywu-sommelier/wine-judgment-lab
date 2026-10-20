@@ -9,7 +9,7 @@
 - [x] Region-specific train/test baseline with historical-price cutoff checks.
 - [x] CLI, tests, manual-install CI example, dataset card and HF export.
 
-## 0.2 — local method revisions
+## 0.2 — published method revisions
 
 - [x] Private analyst tags, four identity conditions and ambiguous fictional dossiers.
 - [x] Mandatory repeats, same-input variability and 3×3 transition tables.
@@ -17,8 +17,8 @@
 - [x] Region/tier-stratified splits with explicit per-tier evaluability.
 - [x] Versioned HF export preserving original six rows and adding `v0.2`.
 - [x] Shorten public working notes; keep detailed records locally.
-- [ ] Review and publish revised software and dataset config.
-- [ ] Create the readable HF `v0.1.0` tag when write authentication is available.
+- [x] Review and publish revised software and dataset config.
+- [x] Create the readable HF `v0.1.0` tag at the original dataset commit.
 
 ### Review follow-ups (not pilot blockers)
 
