@@ -85,6 +85,47 @@ Include ambiguous evidence and frozen insufficiency criteria rather than only
 obvious supported/unsupported cases; synthetic ambiguity does not prove that
 real-world inputs or a particular model will be difficult to assess.
 
+### Pilot leak-handling decision — 2026-10-20 draft amendment
+
+Retain leaking dossiers unchanged and send their frozen evidence under every
+identity condition. Report these dossiers only in the all-dossier population;
+they never enter the clean subset. A leak flag is not redaction and does not
+make the anonymous or swapped text anonymous in practice. Do not interpret
+all-dossier identity differences as isolated effects of the displayed name.
+
+Do not rewrite, redact or drop a dossier after observing model results. If an
+editorial or legal concern requires a correction, stop that dossier's run,
+amend its evidence before inference, regenerate every variant and hash, and
+record the old/new version and reason. An optional future redaction experiment
+requires a separate predefined condition, not a silent change to this one.
+
+### Analyst-reference scoring gate
+
+Before comparing Jev labels with analyst records, implement and validate a
+private per-observation `evidence_status`: `absent`, `partial`, `conflicting`
+or `adequate`. These distinguish the evidence available; they are not model
+labels or objective truth. Record a separate expert-adjudicated `expected_label`
+when reference-label agreement will be scored. Freeze these records before
+inference and resolve disagreements independently of model outputs.
+
+Neither field may be sent to the judge or included in the public trial export.
+The current `verification` tag describes provenance imperfectly and is not a
+valid substitute: `missing` currently also labels some partial/conflicting
+synthetic examples. Until the private schema, validation and fixtures are
+implemented and reviewed, do not score model agreement against these records.
+Descriptive identity sensitivity and repeat variability do not require treating
+the simulation's labels as a ground-truth benchmark.
+
+### Registration readiness
+
+This draft amendment is not preregistration. Before submitting an immutable
+registration, freeze the real sampling frame and sample size, lawful evidence
+sources and cutoffs, reviewer/adjudication procedure, rubric, actual provider
+and versioned model, repeat count and presentation order, failure/retry policy,
+spend limit, planned estimands and uncertainty analysis. Complete the analyst
+reference gate first if label agreement is a study endpoint. No real-data run
+or confirmatory claim is authorized by publishing this software demonstration.
+
 For real data, make swaps within compatible regional and production contexts.
 A contradiction discovered through a name mismatch is not evidence of prestige
 bias. Predesign pairings independently of model outcomes. Do not publish a
