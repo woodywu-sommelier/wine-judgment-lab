@@ -7,6 +7,7 @@ def dossiers():
         "estate_id": "fiction-01", "producer_name": "Domaine Example A",
         "swap_name": "Domaine Example B", "neutral_name": "Domaine A", "region": "Burgundy",
         "synthetic": True, "identity_leakage": False, "swap_plausible": True,
+        "name_aliases": [],
         "evidence": [{"criterion_id": "farming", "observation": "An independent record supports the stated farming claim.",
                       "verification": "independent", "source_id": "s1"}],
         "sources": [{"source_id": "s1", "url": "https://example.org/fiction-01", "rights": "original_synthetic"}],
@@ -208,6 +209,97 @@ class ExperimentTests(unittest.TestCase):
         trials = [t for t in build_trials(dossiers(), rubric(), seed=19) if t["condition"] != "neutral"]
         with self.assertRaises(ValueError):
             analyze(trials, judgments(trials))
+
+    def test_reviewer_alias_matches_possessives_but_not_longer_words(self):
+        from wine_judgment_lab.experiment import build_trials
+        for text, expected in [("Northmere's parcels", True), ("NORTHMERE’s parcels", True),
+                               ("Northmereish is a fictional adjective", False)]:
+            rows = dossiers(); rows[0]["name_aliases"] = ["Northmere"]
+            rows[0]["producer_name"] = "Domaine Northmere"
+            rows[0]["evidence"][0]["observation"] = text
+            trials = build_trials(rows, rubric(), seed=19)
+            with self.subTest(text=text):
+                self.assertTrue(all(t["automatic_identity_leakage"] == expected for t in trials))
+                self.assertTrue(all(t["identity_leakage"] == expected for t in trials))
+                self.assertTrue(all("name_aliases" not in t["state"] for t in trials))
+                self.assertTrue(all("name_aliases" not in t for t in trials))
+        rows[0]["identity_leakage"] = True
+        self.assertTrue(all(t["identity_leakage"] for t in build_trials(rows, rubric(), seed=19)))
+
+    def test_alias_list_must_be_explicit_and_well_formed(self):
+        from wine_judgment_lab.experiment import build_trials
+        for value in (None, "Northmere", [""], ["  "], [42]):
+            rows = dossiers(); rows[0]["name_aliases"] = value
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                build_trials(rows, rubric(), seed=19)
+        rows = dossiers(); del rows[0]["name_aliases"]
+        with self.assertRaises(ValueError):
+            build_trials(rows, rubric(), seed=19)
+
+    def test_clean_metrics_exclude_leaks_and_intersect_swap_plausibility(self):
+        from wine_judgment_lab.experiment import build_trials, analyze
+        rows = dossiers()
+        leaky = copy.deepcopy(rows[0]); leaky.update(estate_id="leaky", identity_leakage=True)
+        implausible = copy.deepcopy(rows[0]); implausible.update(estate_id="implausible", swap_plausible=False)
+        trials = build_trials(rows + [leaky, implausible], rubric(), seed=19)
+        index = {t["trial_id"]: t for t in trials}
+        results = judgments(trials)
+        for row in results:
+            trial = index[row["trial_id"]]
+            if trial["estate_id"] == "leaky":
+                if trial["condition"] == "anonymous": row["label"] = "insufficient_evidence"
+                if trial["condition"] == "neutral": row["label"] = "insufficient_evidence"
+                if trial["condition"] == "swapped": row["label"] = "contradicted"
+                if trial["condition"] == "named" and row["repeat_id"] == 1: row["label"] = "contradicted"
+            if trial["estate_id"] == "implausible":
+                if trial["condition"] == "neutral": row["label"] = "insufficient_evidence"
+                if trial["condition"] == "swapped": row["label"] = "contradicted"
+        all_metrics = analyze(trials, results)["criteria"]["farming"]
+        self.assertAlmostEqual(all_metrics["named_neutral_disagreement_rate"], 2 / 3)
+        clean = all_metrics["clean_subset"]
+        self.assertEqual(clean["estate_count"], 2)
+        self.assertEqual(clean["paired_observations"], 4)
+        self.assertEqual(clean["named_neutral_disagreement_rate"], 0.5)
+        self.assertEqual(clean["named_anonymous_disagreement_rate"], 0)
+        self.assertEqual(clean["swapped_named_disagreement_rate"], 0)
+        self.assertEqual(clean["swapped_paired_observations"], 2)
+        self.assertEqual(clean["same_trial_comparisons"], 8)
+        self.assertEqual(clean["same_trial_disagreement_rate"], 0)
+        self.assertAlmostEqual(all_metrics["same_trial_disagreement_rate"], 1 / 12)
+        self.assertEqual(clean["insufficient_evidence_rate"], 1 / 8)
+        for condition in ("named", "anonymous", "neutral", "swapped"):
+            self.assertEqual(clean["repeat_variability"][condition],
+                             {"comparisons": 2, "disagreements": 0, "disagreement_rate": 0})
+        labels = ("supported", "contradicted", "insufficient_evidence")
+        for comparison in ("anonymous", "neutral", "swapped"):
+            expected = {a: {b: 0 for b in labels} for a in labels}
+            expected["supported"]["supported"] = 4 if comparison == "anonymous" else 2
+            if comparison == "neutral": expected["supported"]["insufficient_evidence"] = 2
+            self.assertEqual(clean["transitions"]["named_to_" + comparison], expected)
+        # Completeness is checked on all input, before any clean-subset filtering.
+        incomplete = [r for r in results if not (index[r["trial_id"]]["estate_id"] == "leaky"
+                                                and r["repeat_id"] == 1
+                                                and index[r["trial_id"]]["condition"] == "neutral")]
+        with self.assertRaises(ValueError):
+            analyze(trials, incomplete)
+
+    def test_empty_clean_subset_has_null_rates_and_zero_counts(self):
+        from wine_judgment_lab.experiment import build_trials, analyze
+        rows = dossiers(); rows[0]["identity_leakage"] = True
+        trials = build_trials(rows, rubric(), seed=19)
+        clean = analyze(trials, judgments(trials))["criteria"]["farming"]["clean_subset"]
+        self.assertEqual(clean["estate_count"], 0)
+        self.assertEqual(clean["paired_observations"], 0)
+        self.assertEqual(clean["swapped_paired_observations"], 0)
+        self.assertEqual(clean["same_trial_comparisons"], 0)
+        for key in ("named_anonymous_disagreement_rate", "named_neutral_disagreement_rate",
+                    "swapped_named_disagreement_rate", "same_trial_disagreement_rate", "insufficient_evidence_rate"):
+            self.assertIsNone(clean[key])
+        for values in clean["repeat_variability"].values():
+            self.assertEqual(values, {"comparisons": 0, "disagreements": 0, "disagreement_rate": None})
+        for table in clean["transitions"].values():
+            self.assertEqual(sum(len(counts) for counts in table.values()), 9)
+            self.assertEqual(sum(n for counts in table.values() for n in counts.values()), 0)
 
 
 if __name__ == "__main__":

@@ -36,6 +36,8 @@ def validate_dossiers(rows):
         identities = [row[k].strip().casefold() for k in ("producer_name", "swap_name", "neutral_name")]
         if len(set(identities + ["identity withheld"])) != 4:
             raise ValueError("Named, swapped, neutral and withheld identities must differ")
+        if not isinstance(row.get("name_aliases"), list) or any(not _text(alias) for alias in row["name_aliases"]):
+            raise ValueError("name_aliases must be an explicit list of nonempty strings")
         if any(type(row.get(k)) is not bool for k in ("synthetic", "identity_leakage", "swap_plausible")):
             raise ValueError("synthetic, identity_leakage and swap_plausible must be explicit booleans")
         if not isinstance(row.get("sources"), list) or not isinstance(row.get("evidence"), list):
@@ -83,9 +85,10 @@ def build_trials(rows, rubric, *, seed):
                 raise ValueError("Evidence references an unknown criterion")
             observations.append({"criterion_id": item["criterion_id"], "text": item["observation"]})
         observations.sort(key=lambda x: (x["criterion_id"], x["text"]))
+        leak_names = [row["producer_name"], row["swap_name"], *row["name_aliases"]]
         automatic_leak = any(
-            re.search(r"(?<!\w)" + re.escape(row[key].strip()) + r"(?!\w)", observation["text"], re.IGNORECASE)
-            for observation in observations for key in ("producer_name", "swap_name"))
+            re.search(r"(?<!\w)" + re.escape(name.strip()) + r"(?!\w)", observation["text"], re.IGNORECASE)
+            for observation in observations for name in leak_names)
         for condition in CONDITIONS:
             trial_id = digest([seed, row["estate_id"], condition])[:24]
             identity = {"named": row["producer_name"], "anonymous": "Identity withheld",
@@ -169,38 +172,44 @@ def analyze(trials, judgments):
     for t in trials:
         by_estate[t["estate_id"]][t["condition"]] = t
     def aggregate():
-        return {"all": [], "clean": [], "swapped": [], "neutral": [], "labels": [],
+        return {"all": [], "swapped": [], "neutral": [], "labels": [], "estates": set(),
                 "repeat": {c: [] for c in CONDITIONS},
                 "transitions": {"named_to_" + c: {a: {b: 0 for b in sorted(LABELS)} for a in sorted(LABELS)}
                                 for c in ("anonymous", "neutral", "swapped")}}
-    aggregates = defaultdict(aggregate)
+    aggregates = defaultdict(lambda: {"all": aggregate(), "clean": aggregate()})
     for values in groups.values():
         for variants in by_estate.values():
             named = variants["named"]
             for q in named["questions"]:
                 c = q["criterion_id"]
                 labels = {condition: values[(t["trial_id"], c)] for condition, t in variants.items()}
-                agg = aggregates[c]
-                agg["all"].append(labels["named"] != labels["anonymous"])
-                agg["neutral"].append(labels["named"] != labels["neutral"])
-                if not named["identity_leakage"]:
-                    agg["clean"].append(labels["named"] != labels["anonymous"])
-                if named["swap_plausible"]:
-                    agg["swapped"].append(labels["swapped"] != labels["named"])
-                agg["labels"].extend(labels.values())
-                for condition in ("anonymous", "neutral", "swapped"):
-                    if condition == "swapped" and not named["swap_plausible"]:
+                for population in ("all", "clean"):
+                    if population == "clean" and named["identity_leakage"]:
                         continue
-                    agg["transitions"]["named_to_" + condition][labels["named"]][labels[condition]] += 1
+                    agg = aggregates[c][population]
+                    agg["estates"].add(named["estate_id"])
+                    agg["all"].append(labels["named"] != labels["anonymous"])
+                    agg["neutral"].append(labels["named"] != labels["neutral"])
+                    if named["swap_plausible"]:
+                        agg["swapped"].append(labels["swapped"] != labels["named"])
+                    agg["labels"].extend(labels.values())
+                    for condition in ("anonymous", "neutral", "swapped"):
+                        if condition == "swapped" and not named["swap_plausible"]:
+                            continue
+                        agg["transitions"]["named_to_" + condition][labels["named"]][labels[condition]] += 1
     for repeats in runs.values():
         for first, second in combinations(repeats, 2):
             for trial in trials:
                 for q in trial["questions"]:
                     pair = (trial["trial_id"], q["criterion_id"])
-                    aggregates[q["criterion_id"]]["repeat"][trial["condition"]].append(first[pair] != second[pair])
-    criteria = {c: {"paired_observations": len(a["all"]), "clean_paired_observations": len(a["clean"]),
+                    for population in ("all", "clean"):
+                        if population == "clean" and trial["identity_leakage"]:
+                            continue
+                        aggregates[q["criterion_id"]][population]["repeat"][trial["condition"]].append(first[pair] != second[pair])
+    def summarize(a, population):
+        return {"population": population, "estate_count": len(a["estates"]),
+                    "paired_observations": len(a["all"]), "swapped_paired_observations": len(a["swapped"]),
                     "named_anonymous_disagreement_rate": _rate(a["all"]),
-                    "clean_named_anonymous_disagreement_rate": _rate(a["clean"]),
                     "swapped_named_disagreement_rate": _rate(a["swapped"]),
                     "named_neutral_disagreement_rate": _rate(a["neutral"]),
                     "same_trial_disagreement_rate": _rate([v for values in a["repeat"].values() for v in values]),
@@ -210,11 +219,20 @@ def analyze(trials, judgments):
                                            for condition, values in a["repeat"].items()},
                     "transitions": a["transitions"],
                     "insufficient_evidence_rate": _rate([v == "insufficient_evidence" for v in a["labels"]])}
-                for c, a in sorted(aggregates.items())}
+    criteria = {}
+    for criterion, populations in sorted(aggregates.items()):
+        all_metrics = summarize(populations["all"], "all dossiers")
+        clean_metrics = summarize(populations["clean"], "identity_leakage=false dossiers")
+        criteria[criterion] = {**all_metrics, "clean_subset": clean_metrics,
+                               "clean_paired_observations": clean_metrics["paired_observations"],
+                               "clean_named_anonymous_disagreement_rate": clean_metrics["named_anonymous_disagreement_rate"]}
     return {"data_kind": "synthetic" if all(t["synthetic"] for t in trials) else "contains_real_data",
             "estate_count": len(by_estate), "complete_runs": len(runs), "complete_repeat_sets": len(groups),
             "provider": next(iter(judges))[0], "model": next(iter(judges))[1], "criteria": criteria,
             "transition_axes": {"rows": "named label", "columns": "comparison-condition label"},
             "transition_populations": {"named_to_anonymous": "all dossiers", "named_to_neutral": "all dossiers",
                                        "named_to_swapped": "swap_plausible dossiers only"},
+            "clean_transition_populations": {"named_to_anonymous": "identity_leakage=false dossiers",
+                                             "named_to_neutral": "identity_leakage=false dossiers",
+                                             "named_to_swapped": "identity_leakage=false AND swap_plausible=true dossiers"},
             "interpretation": "Descriptive label sensitivity, not causal prestige bias. Neutral is a comparison cue, not zero identity. Repeated pairs are not independent estates."}

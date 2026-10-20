@@ -74,10 +74,13 @@ variants and has a stored hash. Dossiers require an identity-leakage flag and a
 plausibility decision for their swap. Vineyard details can reveal identity
 even without the name; report the clean subset separately from all dossiers.
 Analyst verification tags remain in a private local record, not judge inputs.
-Literal producer/swap names in observation text are flagged automatically
+Every dossier requires an explicit reviewer-written `name_aliases` list for
+short forms of the producer and swapped name. Keep this list in the private
+record, not judge inputs. Literal producer/swap names and listed aliases in
+observation text are flagged automatically
 (case-insensitive, word-boundary matching); the effective leak flag is the OR
 of this check and the human flag. This check does not replace human review of
-vineyard names, aliases, source descriptions or other indirect identity clues.
+vineyard names, unlisted aliases, source descriptions or other indirect identity clues.
 Include ambiguous evidence and frozen insufficiency criteria rather than only
 obvious supported/unsupported cases; synthetic ambiguity does not prove that
 real-world inputs or a particular model will be difficult to assess.
@@ -106,8 +109,18 @@ and complete 3×3 tables with named labels as rows and each comparison's labels
 as columns. Those tables show direction of label changes, not prestige bias:
 a real name may carry real information. The swapped table and rate both use
 only plausible swaps; anonymous/neutral
-tables use all dossiers, with populations explicitly labeled. Use equal
-repeat counts across real-study runs: otherwise pooled condition rates
+tables use all dossiers, with populations explicitly labeled.
+
+For every measure, also report the `clean_subset`: exclude all dossiers flagged
+by either automatic or human leakage checks. This includes named/neutral and
+swapped/named disagreement, every transition table, same-input variability
+pooled and by condition, and insufficient-evidence rates. Clean swapped
+tables and rates use the intersection of clean and plausible-swap dossiers.
+Report denominators; zero eligible dossiers means null rates and zero counts,
+not evidence of invariance. Validate complete repeats on all inputs before
+constructing either population.
+
+Use equal repeat counts across real-study runs: otherwise pooled condition rates
 weight runs linearly in repeats, but repeat-noise rates weight them by the
 number of repeat pairs. Neither pooled metric is a causal correction.
 A signed quality effect requires a separately

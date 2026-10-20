@@ -44,6 +44,10 @@ This is a method demonstration, not a trained model.
   tags removed from judge inputs; separate manual/automatic literal-name leak
   flags. The code requires two or more repeats per run and reports same-input
   variability beside condition disagreement and full 3×3 transition counts.
+  Reviewer-written name aliases augment literal-name checks and remain in
+  private analyst records. All measures also have a clean-only summary;
+  clean swapped cross-condition comparisons intersect clean dossiers with
+  plausible swaps.
   Revised rows live only in `data/v0.2/trials.jsonl`.
 
 Code and research protocol:
@@ -69,6 +73,7 @@ and swap-plausibility booleans are explicit fixture assumptions, not an audit
 of real-world anonymity. v0.2 adds manual and automatic leakage flags; the
 effective flag is their logical OR. Literal detection cannot find all indirect
 identity clues. Analyst records are excluded from the HF export.
+An empty clean subset has zero counts and null rates, not zero measured bias.
 Hashes use canonical UTF-8 JSON with sorted keys.
 
 ## Creation and reuse

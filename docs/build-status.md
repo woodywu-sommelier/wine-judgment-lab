@@ -4,7 +4,7 @@ Version 0.2.0 is under local review. The standard-library offline core runs
 from a checkout on Python 3.11+. No live Jev calls or real estate ratings have
 been produced. Hosted CI and installed-wheel packaging have not been verified.
 Use `python3 -m unittest discover -s tests -v` to run the full suite.
-Local verification on Python 3.14: 30 tests passed. The revised demo produced
+Local verification on Python 3.14: 34 tests passed. The revised demo produced
 20 trials and 80 simulated judgments with zero API calls; JSONL reanalysis
 and compilation succeeded. Its original six-row export matched the hash below.
 

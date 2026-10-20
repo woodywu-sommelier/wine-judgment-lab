@@ -20,6 +20,12 @@
 - [ ] Review and publish revised software and dataset config.
 - [ ] Create the readable HF `v0.1.0` tag when write authentication is available.
 
+### Review follow-ups (not pilot blockers)
+
+- [ ] Distinguish absent evidence from partial/conflicting evidence in private analyst records.
+- [ ] Restore held-out-label invariance coverage using an explicit frozen split at fitting time.
+- [ ] Copy frozen v0.1 export bytes directly rather than re-encoding parsed JSON.
+
 ## Next — data feasibility and registered pilot
 
 - [x] Confirm `woodywu-sommelier` as the owner on both services.

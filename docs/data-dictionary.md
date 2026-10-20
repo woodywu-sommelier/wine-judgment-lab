@@ -5,7 +5,7 @@ JSON inputs reject duplicate object keys and nonfinite numeric constants.
 ## Dossier JSON array
 
 Each dossier needs `estate_id`, `producer_name`, `swap_name`, `neutral_name`, `region`, boolean
-`synthetic`, boolean `identity_leakage`, boolean `swap_plausible`, `evidence`
+`synthetic`, boolean `identity_leakage`, boolean `swap_plausible`, `name_aliases`, `evidence`
 and `sources`. Use stable estate IDs and distinct displayed original/swap names.
 
 Each evidence object needs `criterion_id`, `observation`, `verification`
@@ -24,7 +24,11 @@ observations contain only `criterion_id` and `text`.
 
 The four conditions are named, anonymous, neutral and swapped. Neutral invented
 names must differ from named/swapped/withheld identities. The core does not
-validate their cultural neutrality. Literal producer/swap names are detected
+validate their cultural neutrality. `name_aliases` is a required reviewer-written
+list of nonempty strings covering short forms of both producer and swap names.
+An explicit empty list is allowed, but does not certify anonymity. The list
+stays in the private analyst record, not trial metadata or judge input.
+Literal producer/swap names and these aliases are detected
 case-insensitively at word boundaries in observation text. Trial metadata
 records `manual_identity_leakage`, `automatic_identity_leakage` and their OR,
 `identity_leakage`. Human review remains necessary for indirect clues.
@@ -62,6 +66,19 @@ the swap subset excludes reviewer-marked implausible pairings.
 The named→swapped transition table uses this same plausible-swap subset;
 the other two transition tables use all dossiers. Empty tables retain nine
 zero cells. Populations are labeled in `transition_populations`.
+Every criterion also reports a complete `clean_subset` with the same metrics:
+condition disagreement, all three transition tables, same-input variability
+(pooled and by condition), and insufficient-evidence rate. This subset excludes
+any dossier whose effective `identity_leakage` flag is true. Its swapped table
+and rate additionally require `swap_plausible=true`. The original top-level
+metrics remain the all-dossier results; legacy `clean_paired_observations` and
+`clean_named_anonymous_disagreement_rate` mirror their `clean_subset` values.
+Both populations report estate counts, condition-pair counts, swap-pair counts
+and repeat-comparison counts. An empty clean subset has zero counts and null
+rates, never a reassuring zero disagreement rate. Its tables retain nine zero
+cells. `clean_transition_populations` explicitly labels the intersections.
+Input completeness and repeat requirements are validated before filtering,
+so incomplete judgments from leaky dossiers still invalidate the whole input.
 With r repeats, a run contributes r cross-condition pairs but r(r−1)/2
 same-input repeat pairs per trial. Unequal repeat counts therefore weight
 runs differently across these descriptive metrics. Freeze equal repeat
