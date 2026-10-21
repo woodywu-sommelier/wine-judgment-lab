@@ -20,6 +20,14 @@ of each snapshot. If the edition is incomplete, inaccessible or unavailable,
 stop and request a source or amend this frame before proceeding. Do not invent
 tiers or substitute a different edition, region or publisher.
 
+### Geographic clarification recorded before candidate screening
+
+The official edition covers the Côte de Nuits, Côte de Beaune and Côte
+Chalonnaise. Restrict the comparison pool to producing estates in those same
+areas. An estate outside the covered territory cannot fill the not listed
+slot. This clarification follows verification of the official edition and
+precedes candidate screening. The edition and selection rule are unchanged.
+
 ## Selection rule
 
 1. Target four estates with distinct private IDs. Select one from the highest
