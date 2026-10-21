@@ -50,10 +50,14 @@ def validate_dossiers(rows):
                 raise ValueError("Duplicate source_id")
             sources[source["source_id"]] = source
         for item in row["evidence"]:
+            if isinstance(item, dict) and "source_ids" in item:
+                raise ValueError("Each observation must reference exactly one source_id")
             if not isinstance(item, dict) or any(not _text(item.get(k)) for k in ("criterion_id", "observation", "source_id")):
                 raise ValueError("Each observation needs criterion, text and source")
             if item.get("verification") not in {"independent", "producer_claim", "missing", "third_party", "mixed_sources"}:
                 raise ValueError("Unknown verification status")
+            if not row["synthetic"] and item["verification"] in {"mixed_sources", "missing"}:
+                raise ValueError("Real observations need one source with explicit provenance")
             if item["source_id"] not in sources:
                 raise ValueError("Unknown evidence source")
 

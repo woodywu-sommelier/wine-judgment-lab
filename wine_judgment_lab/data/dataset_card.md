@@ -22,6 +22,10 @@ configs:
   data_files:
   - split: example
     path: data/v0.2/trials.jsonl
+- config_name: v0.3
+  data_files:
+  - split: example
+    path: data/v0.3/trials.jsonl
 ---
 
 # Wine Judgment Lab — Synthetic Identity Trials
@@ -31,6 +35,11 @@ Created by Woody Wu. This export preserves the original six-row
 from five fictional dossiers. No model was called to create labels. Neither
 config contains ratings of real estates or measured Jev performance.
 This is a method demonstration, not a trained model.
+
+The development export adds a synthetic v0.3 config with one source per
+observation. It splits the fictional composite observation into two items.
+The existing v0.1 and v0.2 trial files remain unchanged. No real estate data
+is included and no v0.3 upload or release is implied by generating this folder.
 
 ## Changelog and frozen v0.1
 

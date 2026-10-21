@@ -81,8 +81,12 @@
       {"criterion_id": "vintage_consistency", "completeness": "absent", "expected_label": null, "adjudicated_by": [], "adjudicated_at": null, "agreement": null, "note": "No vintage observations supplied"}
     ],
     "evidence": [
-      {"criterion_id": "farming", "observation": "FICTIONAL: A grower-funded adviser reports no prohibited treatments. A laboratory reports a trace residue, but the report does not distinguish neighboring drift from application on the estate. No parcel-level inspection record is supplied.", "verification": "mixed_sources", "source_id": "s5"}
+      {"criterion_id": "farming", "observation": "FICTIONAL: An adviser funded by the grower reports no prohibited treatments. No parcel inspection record is supplied.", "verification": "producer_claim", "source_id": "s5-adviser"},
+      {"criterion_id": "farming", "observation": "FICTIONAL: A laboratory reports a trace residue, but the report does not distinguish neighboring drift from application on the estate.", "verification": "third_party", "source_id": "s5-lab"}
     ],
-    "sources": [{"source_id": "s5", "url": "https://example.org/fictional-conflicting-records", "rights": "original_synthetic"}]
+    "sources": [
+      {"source_id": "s5-adviser", "url": "https://example.org/fictional-adviser-record", "rights": "original_synthetic"},
+      {"source_id": "s5-lab", "url": "https://example.org/fictional-lab-record", "rights": "original_synthetic"}
+    ]
   }
 ]

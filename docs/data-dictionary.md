@@ -15,6 +15,10 @@ established) and `mixed_sources` (a composite observation with differently
 attributed sources). These are provenance descriptors, not completeness or
 truth labels. Legacy `missing` is retained for compatibility, but the migrated
 fictional observations no longer use it where partial evidence exists.
+Real dossiers with `synthetic: false` reject `mixed_sources` and `missing`.
+Every observation has one string `source_id` referencing one source record.
+The plural `source_ids` form is rejected. Composite claims must be separated
+into observations and individually attributed before entering a real dossier.
 Each source needs `source_id`, `url`, `rights`. Production dossiers should also
 record retrieval time, observation date, original-vs-secondary provenance and
 access limitations. The current validator checks structural completeness, not
@@ -77,12 +81,22 @@ the full record to owner-only `analyst_records.json` and non-mutating mismatch
 flags to owner-only `analyst_review.json`. Flags cover non-adequate completeness
 paired with a conclusive label, `absent` with observations, or non-absent with
 no observations. They request human review, never correct the record or label.
+An `adequate` assessment paired with `insufficient_evidence` also creates a
+review flag without changing the label.
 Real domain exceptions can be legitimate; flags are not automatic truth rules.
 
 The analyst list and all of its fields stay out of frozen trials and HF exports.
 Changing these assessments changes the private dossier manifest hash but not
 trial IDs, evidence hashes or trial hashes. The new demo uses a deliberately
 simple completeness-based simulator, not expected labels or expert scoring.
+
+The manifest now separates `judge_dossiers_sha256` from
+`analyst_records_sha256`. The former hashes a canonically sorted list of only
+the actual `state` and `questions` payloads, preserving duplicate payloads.
+The latter hashes the full private dossier records. Analyst edits affect the
+private hash, not the judge payload hash. The ambiguous `dossiers_sha256` field
+is no longer emitted. `trials_sha256` continues to bind complete frozen trials.
+Do not distribute the private records merely because their hash is recorded.
 
 `check-reference` is an offline readiness gate, not a reference scorer or an
 inference runner. It fails on null labels or adjudication dates not strictly

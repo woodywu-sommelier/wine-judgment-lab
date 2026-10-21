@@ -94,6 +94,14 @@ class AnalystTests(unittest.TestCase):
         self.assertEqual(report["review_flags"], flags)
         self.assertEqual(rows, before)
 
+    def test_adequate_with_insufficient_label_is_flagged_without_correction(self):
+        from wine_judgment_lab.analyst import validate_assessments
+        rows = adjudicated(); rows[0]["analyst_assessments"][0]["expected_label"] = "insufficient_evidence"
+        before = copy.deepcopy(rows)
+        flags = validate_assessments(rows[0], {"farming"})
+        self.assertIn("completeness_label_mismatch", [f["code"] for f in flags])
+        self.assertEqual(rows, before)
+
 
 if __name__ == "__main__":
     unittest.main()

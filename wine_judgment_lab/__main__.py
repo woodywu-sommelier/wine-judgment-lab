@@ -53,7 +53,9 @@ def _prepare(rows, rubric, seed, out):
     _write(out / "analyst_records.json", rows)
     criteria = {q["criterion_id"] for q in rubric["questions"]}
     _write(out / "analyst_review.json", {"review_flags": [f for row in rows for f in validate_assessments(row, criteria)]})
-    _write(out / "manifest.json", {"version": __version__, "seed": seed, "dossiers_sha256": digest(rows),
+    judge_payloads = sorted(({"state": t["state"], "questions": t["questions"]} for t in trials), key=digest)
+    _write(out / "manifest.json", {"version": __version__, "seed": seed,
+           "judge_dossiers_sha256": digest(judge_payloads), "analyst_records_sha256": digest(rows),
            "rubric_sha256": digest(rubric), "trials_sha256": digest(trials), "trial_count": len(trials),
            "created_at": datetime.now(UTC).isoformat(), "api_calls": 0,
            "data_kind": "synthetic" if all(r["synthetic"] for r in rows) else "contains_real_data"})
@@ -78,13 +80,16 @@ def _demo(out, seed):
     _write(out / "simulated_judgments.jsonl", judgments, lines=True)
     _write(out / "summary.json", analyze(trials, judgments))
     _write(out / "audit_baseline.json", evaluate_baseline(_json(DATA / "audit.json"), seed=seed))
-    hf = out / "huggingface"; (hf / "data" / "v0.2").mkdir(parents=True)
+    hf = out / "huggingface"
+    (hf / "data" / "v0.2").mkdir(parents=True)
+    (hf / "data" / "v0.3").mkdir()
     (hf / "README.md").write_text((DATA / "dataset_card.md").read_text(encoding="utf-8"), encoding="utf-8")
     export = [{k: v for k, v in trial.items() if k not in {"state", "questions"}} | {
         "state_json": json.dumps(trial["state"], sort_keys=True, ensure_ascii=False),
         "questions_json": json.dumps(trial["questions"], sort_keys=True, ensure_ascii=False)} for trial in trials]
     _write(hf / "data" / "trials.jsonl", _jsonl(DATA / "v01-trials.jsonl"), lines=True)
-    _write(hf / "data" / "v0.2" / "trials.jsonl", export, lines=True)
+    _write(hf / "data" / "v0.2" / "trials.jsonl", _jsonl(DATA / "v02-trials.jsonl"), lines=True)
+    _write(hf / "data" / "v0.3" / "trials.jsonl", export, lines=True)
     return {"output": str(out), "data_kind": "synthetic", "api_calls": 0, "trials": len(trials), "judgments": len(judgments)}
 
 
