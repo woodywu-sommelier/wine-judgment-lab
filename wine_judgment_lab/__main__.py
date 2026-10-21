@@ -8,6 +8,7 @@ import sys
 
 from . import __version__
 from .audit import evaluate_baseline
+from .analyst import validate_assessments, check_reference_ready
 from .experiment import analyze, build_trials, digest
 
 DATA = Path(__file__).with_name("data")
@@ -50,6 +51,8 @@ def _prepare(rows, rubric, seed, out):
     out.mkdir(mode=0o700, parents=True, exist_ok=False)
     _write(out / "trials.jsonl", trials, lines=True)
     _write(out / "analyst_records.json", rows)
+    criteria = {q["criterion_id"] for q in rubric["questions"]}
+    _write(out / "analyst_review.json", {"review_flags": [f for row in rows for f in validate_assessments(row, criteria)]})
     _write(out / "manifest.json", {"version": __version__, "seed": seed, "dossiers_sha256": digest(rows),
            "rubric_sha256": digest(rubric), "trials_sha256": digest(trials), "trial_count": len(trials),
            "created_at": datetime.now(UTC).isoformat(), "api_calls": 0,
@@ -65,10 +68,10 @@ def _demo(out, seed):
     for repeat in range(2):
         for trial in trials:
             for question in trial["questions"]:
-                # Simulation reads private tags, never a live judge or empirical evidence.
+                # Deliberate toy rule, not expert reference labels or empirical evidence.
                 criterion = question["criterion_id"]
-                supplied = [o for o in private[trial["estate_id"]]["evidence"] if o["criterion_id"] == criterion]
-                label = "supported" if any(o["verification"] == "independent" for o in supplied) else "insufficient_evidence"
+                assessment = next(a for a in private[trial["estate_id"]]["analyst_assessments"] if a["criterion_id"] == criterion)
+                label = "supported" if assessment["completeness"] == "adequate" else "insufficient_evidence"
                 judgments.append({"trial_id": trial["trial_id"], "trial_hash": trial["trial_hash"],
                      "criterion_id": criterion, "label": label, "provider": "simulated", "model": "synthetic-demo",
                      "run_id": "offline-demo", "repeat_id": repeat, "created_at": "2026-10-20T00:00:00Z"})
@@ -99,6 +102,9 @@ def main(argv=None):
     audit = commands.add_parser("audit", help="held-out training-only modal tier baseline")
     audit.add_argument("--rows", required=True); audit.add_argument("--out", type=Path, required=True)
     audit.add_argument("--seed", type=int, default=19)
+    reference = commands.add_parser("check-reference", help="offline private adjudication/timing readiness check, not scoring")
+    reference.add_argument("--dossiers", required=True); reference.add_argument("--rubric", required=True)
+    reference.add_argument("--first-run-at", required=True); reference.add_argument("--out", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
         if args.command == "demo":
@@ -108,6 +114,12 @@ def main(argv=None):
             result = {"output": str(args.out), "trial_count": len(trials), "api_calls": 0}
         elif args.command == "analyze":
             result = analyze(_jsonl(args.trials), _jsonl(args.judgments)); _write(args.out, result)
+        elif args.command == "check-reference":
+            rows, rubric = _json(args.dossiers), _json(args.rubric)
+            build_trials(rows, rubric, seed=0)  # full schema validation, no files or model client
+            result = check_reference_ready(rows, {q["criterion_id"] for q in rubric["questions"]},
+                                           first_run_at=args.first_run_at)
+            _write(args.out, result)
         else:
             result = evaluate_baseline(_json(args.rows), seed=args.seed); _write(args.out, result)
     except (ValueError, OSError, KeyError, TypeError) as error:

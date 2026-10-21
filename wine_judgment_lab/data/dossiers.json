@@ -9,6 +9,10 @@
     "synthetic": true,
     "identity_leakage": false,
     "swap_plausible": true,
+    "analyst_assessments": [
+      {"criterion_id": "farming", "completeness": "adequate", "expected_label": null, "adjudicated_by": [], "adjudicated_at": null, "agreement": null, "note": "Fictional adequate farm record; not expert-adjudicated"},
+      {"criterion_id": "vintage_consistency", "completeness": "adequate", "expected_label": null, "adjudicated_by": [], "adjudicated_at": null, "agreement": null, "note": "Fictional comparable three-vintage record"}
+    ],
     "evidence": [
       {"criterion_id": "farming", "observation": "FICTIONAL: An independent farm-record audit supports the estate's stated organic farming practice during the observed year.", "verification": "independent", "source_id": "fiction-source-01"},
       {"criterion_id": "vintage_consistency", "observation": "FICTIONAL: Structured independent notes from three distinct vintages under comparable conditions support the stated consistency claim.", "verification": "independent", "source_id": "fiction-source-02"}
@@ -28,6 +32,10 @@
     "synthetic": true,
     "identity_leakage": false,
     "swap_plausible": true,
+    "analyst_assessments": [
+      {"criterion_id": "farming", "completeness": "partial", "expected_label": null, "adjudicated_by": [], "adjudicated_at": null, "agreement": null, "note": "Producer claim exists; independent support absent"},
+      {"criterion_id": "vintage_consistency", "completeness": "absent", "expected_label": null, "adjudicated_by": [], "adjudicated_at": null, "agreement": null, "note": "No vintage observations supplied"}
+    ],
     "evidence": [
       {"criterion_id": "farming", "observation": "FICTIONAL: The producer says it farms organically. No independent farming observation is supplied.", "verification": "producer_claim", "source_id": "fiction-source-03"}
     ],
@@ -40,8 +48,12 @@
     "name_aliases": ["Fictional East", "Fictional West"],
     "swap_name": "Domaine Fictional West", "neutral_name": "Domaine C", "region": "Burgundy",
     "synthetic": true, "identity_leakage": false, "swap_plausible": true,
+    "analyst_assessments": [
+      {"criterion_id": "farming", "completeness": "partial", "expected_label": null, "adjudicated_by": [], "adjudicated_at": null, "agreement": null, "note": "Certification entry exists but vineyard scope is unclear"},
+      {"criterion_id": "vintage_consistency", "completeness": "absent", "expected_label": null, "adjudicated_by": [], "adjudicated_at": null, "agreement": null, "note": "No vintage observations supplied"}
+    ],
     "evidence": [
-      {"criterion_id": "farming", "observation": "FICTIONAL: A certification entry covers the estate's packing facility; it does not specify whether the vineyard parcels were inspected. The supplied document does not define its scope.", "verification": "missing", "source_id": "s3"}
+      {"criterion_id": "farming", "observation": "FICTIONAL: A certification entry covers the estate's packing facility; it does not specify whether the vineyard parcels were inspected. The supplied document does not define its scope.", "verification": "third_party", "source_id": "s3"}
     ],
     "sources": [{"source_id": "s3", "url": "https://example.org/fictional-certification-scope", "rights": "original_synthetic"}]
   },
@@ -50,8 +62,12 @@
     "name_aliases": ["Fictional West", "Fictional East"],
     "swap_name": "Domaine Fictional East", "neutral_name": "Domaine D", "region": "Burgundy",
     "synthetic": true, "identity_leakage": false, "swap_plausible": true,
+    "analyst_assessments": [
+      {"criterion_id": "farming", "completeness": "absent", "expected_label": null, "adjudicated_by": [], "adjudicated_at": null, "agreement": null, "note": "No farming observations supplied"},
+      {"criterion_id": "vintage_consistency", "completeness": "partial", "expected_label": null, "adjudicated_by": [], "adjudicated_at": null, "agreement": null, "note": "Only two matched vintages; tank sample not comparable"}
+    ],
     "evidence": [
-      {"criterion_id": "vintage_consistency", "observation": "FICTIONAL: A panel recorded consistent profiles in two vintages under matched conditions. A third note describes a tank sample without identifying its vintage or the panel conditions.", "verification": "missing", "source_id": "s4"}
+      {"criterion_id": "vintage_consistency", "observation": "FICTIONAL: A panel recorded consistent profiles in two vintages under matched conditions. A third note describes a tank sample without identifying its vintage or the panel conditions.", "verification": "independent", "source_id": "s4"}
     ],
     "sources": [{"source_id": "s4", "url": "https://example.org/fictional-two-vintages", "rights": "original_synthetic"}]
   },
@@ -60,8 +76,12 @@
     "name_aliases": ["Fictional Hill", "Fictional Vale"],
     "swap_name": "Domaine Fictional Vale", "neutral_name": "Domaine E", "region": "Burgundy",
     "synthetic": true, "identity_leakage": false, "swap_plausible": true,
+    "analyst_assessments": [
+      {"criterion_id": "farming", "completeness": "conflicting", "expected_label": null, "adjudicated_by": [], "adjudicated_at": null, "agreement": null, "note": "Adviser claim and unexplained residue result need reconciliation"},
+      {"criterion_id": "vintage_consistency", "completeness": "absent", "expected_label": null, "adjudicated_by": [], "adjudicated_at": null, "agreement": null, "note": "No vintage observations supplied"}
+    ],
     "evidence": [
-      {"criterion_id": "farming", "observation": "FICTIONAL: A grower-funded adviser reports no prohibited treatments. A laboratory reports a trace residue, but the report does not distinguish neighboring drift from application on the estate. No parcel-level inspection record is supplied.", "verification": "missing", "source_id": "s5"}
+      {"criterion_id": "farming", "observation": "FICTIONAL: A grower-funded adviser reports no prohibited treatments. A laboratory reports a trace residue, but the report does not distinguish neighboring drift from application on the estate. No parcel-level inspection record is supplied.", "verification": "mixed_sources", "source_id": "s5"}
     ],
     "sources": [{"source_id": "s5", "url": "https://example.org/fictional-conflicting-records", "rights": "original_synthetic"}]
   }

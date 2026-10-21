@@ -8,6 +8,12 @@ Local verification on Python 3.14: 34 tests passed. The revised demo produced
 20 trials and 80 simulated judgments with zero API calls; JSONL reanalysis
 and compilation succeeded. Its original six-row export matched the hash below.
 
+Development follow-up (`0.3.0.dev0`): criterion-level private assessments and an
+offline readiness gate, under review. Full development suite: 43 tests passed.
+The fictional records retain 10 pending reference labels; the readiness command
+fails before writing a report, as intended. Both published trial-data hashes
+remain unchanged. This adds no reference-agreement scorer or live inference.
+
 The original source is frozen at [v0.1.0](https://github.com/woodywu-sommelier/wine-judgment-lab/releases/tag/v0.1.0).
 The original dataset is frozen at
 [73ec2e6](https://huggingface.co/datasets/woodywu-sommelier/wine-judgment-lab-synthetic/tree/73ec2e61a28e7075c746c8ea573342a7613429af).

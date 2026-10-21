@@ -35,6 +35,12 @@ implemented in this starter. No trained model weights are distributed.
 
 ## Run it
 
+Development branch addition (`0.3.0.dev0`): private criterion assessments and an
+offline reference-readiness check. Published v0.1/v0.2 trial exports are unchanged.
+See [assessment contract](docs/data-dictionary.md) and
+[real-dossier feasibility ledger](docs/feasibility-ledger.md). No reference
+agreement scorer or live model adapter is included.
+
 Python 3.11 or newer. No installation or external packages are needed from a
 checkout:
 
@@ -71,6 +77,19 @@ python3 -m wine_judgment_lab audit \
   --rows wine_judgment_lab/data/audit.json \
   --seed 19 --out runs/baseline.json
 ```
+
+Check private references against a predeclared run time (replace it with the
+actual intended start; this command makes no call):
+
+```bash
+python3 -m wine_judgment_lab check-reference \
+  --dossiers local/dossiers.json --rubric wine_judgment_lab/data/rubric.json \
+  --first-run-at 2026-11-03T12:00:00Z --out local/reference-readiness.json
+```
+
+Pending labels or late adjudications fail before the report is written.
+The synthetic fixtures are not expert-adjudicated: their labels remain null,
+so the bundled fixtures intentionally fail this readiness check.
 
 The four conditions are named, anonymous, neutral invented name, and swapped.
 Neutral is a comparison cue, not a zero-identity baseline. `analyze` requires
