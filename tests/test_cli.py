@@ -28,6 +28,8 @@ class CliTests(unittest.TestCase):
             self.assertEqual(len(revised), 20)
             self.assertEqual(hashlib.sha256((out / "huggingface" / "data" / "v0.2" / "trials.jsonl").read_bytes()).hexdigest(),
                              "7ca5825149fbd9620f2bafc92021e5dd16674432c8c24f51ea34a934e1af4ab8")
+            revised = [json.loads(line) for line in (out / "huggingface" / "data" / "v0.3" / "trials.jsonl").read_text().splitlines()]
+            self.assertEqual(len(revised), 20)
             for row in revised:
                 self.assertNotIn("verification", row["state_json"])
                 self.assertNotIn("verification", json.dumps(row))
@@ -43,6 +45,8 @@ class CliTests(unittest.TestCase):
             self.assertIsNone(records[0]["analyst_assessments"][0]["expected_label"])
             self.assertEqual(records[2]["analyst_assessments"][0]["completeness"], "partial")
             self.assertEqual(records[4]["analyst_assessments"][0]["completeness"], "conflicting")
+            self.assertEqual(len(records[4]["evidence"]), 2)
+            self.assertEqual(len({e["source_id"] for e in records[4]["evidence"]}), 2)
             self.assertEqual((out / "analyst_review.json").stat().st_mode & 0o777, 0o600)
             trials = {row["trial_id"]: row for row in map(json.loads, trial_text.splitlines())}
             judgments = list(map(json.loads, (out / "simulated_judgments.jsonl").read_text().splitlines()))
@@ -98,6 +102,24 @@ class CliTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(json.loads(out.read_text())["assessment_count"], 1)
             self.assertEqual(out.stat().st_mode & 0o777, 0o600)
+
+    def test_manifest_separates_judge_payload_and_private_record_hashes(self):
+        from test_analyst import adjudicated
+        from test_experiment import rubric
+        from wine_judgment_lab.__main__ import _prepare
+        import copy
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); original = adjudicated()
+            changed = copy.deepcopy(original)
+            changed[0]["analyst_assessments"][0].update(completeness="conflicting", expected_label="insufficient_evidence")
+            _prepare(original, rubric(), 19, root / "first")
+            _prepare(changed, rubric(), 19, root / "second")
+            first = json.loads((root / "first/manifest.json").read_text())
+            second = json.loads((root / "second/manifest.json").read_text())
+            self.assertNotIn("dossiers_sha256", first)
+            self.assertEqual(first["judge_dossiers_sha256"], second["judge_dossiers_sha256"])
+            self.assertNotEqual(first["analyst_records_sha256"], second["analyst_records_sha256"])
+            self.assertEqual(first["trials_sha256"], second["trials_sha256"])
 
 
 if __name__ == "__main__":

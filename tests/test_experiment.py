@@ -74,6 +74,17 @@ class ExperimentTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             build_trials(rows, rubric(), seed=19)
 
+    def test_real_dossiers_reject_ambiguous_provenance_and_multiple_source_keys(self):
+        from wine_judgment_lab.experiment import build_trials
+        for verification in ("mixed_sources", "missing"):
+            rows = dossiers(); rows[0]["synthetic"] = False
+            rows[0]["evidence"][0]["verification"] = verification
+            with self.subTest(verification=verification), self.assertRaises(ValueError):
+                build_trials(rows, rubric(), seed=19)
+        rows = dossiers(); rows[0]["evidence"][0]["source_ids"] = ["s1", "s2"]
+        with self.assertRaises(ValueError):
+            build_trials(rows, rubric(), seed=19)
+
     def test_analysis_measures_label_changes_without_assigning_quality_scores(self):
         from wine_judgment_lab.experiment import build_trials, analyze
         trials = build_trials(dossiers(), rubric(), seed=19)

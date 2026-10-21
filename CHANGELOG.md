@@ -2,6 +2,12 @@
 
 ## Unreleased — 0.3.0.dev0
 
+Preparation prerequisites added on 21 October 2026: explicit single source
+attribution, stricter real record provenance, a symmetric completeness warning,
+and separate judge payload and analyst record manifest hashes. The composite
+fictional observation is now two source attributed items. Revised synthetic
+trial output uses config v0.3; the published v0.1 and v0.2 files remain frozen.
+
 - Private criterion-level `analyst_assessments`, exactly one per rubric criterion,
   explicit completeness and nullable expected labels with adjudication metadata.
 - Offline reference-readiness command: pending/late labels fail closed;

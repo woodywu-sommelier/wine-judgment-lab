@@ -65,7 +65,8 @@ def validate_assessments(dossier, criterion_ids):
                                   or (agreement != "single_reviewer" and len(reviewers) < 2)):
             raise ValueError("Agreement must describe the recorded reviewer count")
         codes = []
-        if completeness != "adequate" and label not in (None, "insufficient_evidence"):
+        if (completeness != "adequate" and label not in (None, "insufficient_evidence")) or (
+                completeness == "adequate" and label == "insufficient_evidence"):
             codes.append("completeness_label_mismatch")
         has_observations = any(e["criterion_id"] == criterion for e in dossier["evidence"])
         if completeness == "absent" and has_observations:
