@@ -43,9 +43,11 @@ peer vote) adds Spearman agreement oriented so positive means agreement.
   count: a small shift moves many entries when many sit near the line.
 - **Gate noise**: entities whose qualification changes between repeats of the
   same condition. Compare this with flips between conditions before calling
-  anything a name effect.
+  anything a name effect. With a single repeat it is `null` (not measured),
+  never zero.
 - **Sufficiency shift**: median change, counts down, up and unchanged, and an
-  exact two-sided sign test (descriptive).
+  exact two-sided sign test (descriptive; p-values to three significant
+  figures).
 - **Scores**: Spearman across all entities and median absolute shift.
 - **Leaders** with and without each cutoff.
 

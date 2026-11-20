@@ -18,6 +18,11 @@ def _round(value):
     return None if value is None else round(value, 4)
 
 
+def _p_value(value):
+    # Three significant figures: fixed decimals would print a strong result as 0.0.
+    return None if value is None else float(f"{value:.3g}")
+
+
 def _meets(value, cutoff):
     return value >= cutoff - TOLERANCE
 
@@ -142,9 +147,11 @@ def gate_audit(rows, *, reference="named", cutoffs=DEFAULT_CUTOFFS, band=0.03,
                 qualified = [e for e in ids if _meets(med[(e, c, "sufficiency")], cut)]
                 leader = max(qualified, key=lambda e: (med[(e, c, "score")], e), default=None)
                 # Gate noise: entities whose qualification differs between repeats.
-                unstable = [e for e in ids if len({_meets(s, cut) for s in values(e, c, "sufficiency")}) > 1]
+                # With one repeat there is nothing to compare: report unknown, not zero.
+                unstable = (None if len(repeats) < 2 else
+                            len([e for e in ids if len({_meets(s, cut) for s in values(e, c, "sufficiency")}) > 1]))
                 per_cutoff[f"{cut:.2f}"] = {"qualified": len(qualified), "leader": leader,
-                                            "unstable_across_repeats": len(unstable)}
+                                            "unstable_across_repeats": unstable}
             diffs = [abs(a - b) for e in ids for a, b in combinations(values(e, c, "sufficiency"), 2)]
             unfiltered = max(ids, key=lambda e: (med[(e, c, "score")], e), default=None)
             out["conditions"][c] = {
@@ -171,7 +178,7 @@ def gate_audit(rows, *, reference="named", cutoffs=DEFAULT_CUTOFFS, band=0.03,
                 "qualification_by_cutoff": gates,
                 "sufficiency_shift": {"median": _round(median(shifts)) if shifts else None, "down": down, "up": up,
                                       "unchanged": len(shifts) - down - up,
-                                      "sign_test_two_sided_p": _round(sign_test(down, up))},
+                                      "sign_test_two_sided_p": _p_value(sign_test(down, up))},
                 "score": {"spearman_all_entities": _round(spearman([med[(e, reference, "score")] for e in ids],
                                                                    [med[(e, c, "score")] for e in ids])),
                           "median_absolute_shift": _round(median(abs(med[(e, c, "score")] - med[(e, reference, "score")])

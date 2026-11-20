@@ -82,6 +82,21 @@ class GateTests(unittest.TestCase):
             self.audit(rows)
         result = self.audit(rows, min_repeats=1)
         self.assertTrue(result["exploratory_single_repeat"])
+        named = result["all"]["conditions"]["named"]
+        self.assertIsNone(named["by_cutoff"]["0.70"]["unstable_across_repeats"])  # unknown, not zero
+        self.assertIsNone(named["median_repeat_sufficiency_difference"])
+
+    def test_small_p_values_keep_significant_figures(self):
+        rows = []
+        for i in range(46):
+            named = 0.7
+            masked = 0.6 if i < 38 else 0.8      # 38 down, 8 up
+            for condition, s in (("named", named), ("masked", masked)):
+                for repeat in (0, 1):
+                    rows.append(row(f"E{i:02d}", condition, repeat, 1.0, s))
+        shift = self.audit(rows)["all"]["comparisons"]["named_vs_masked"]["sufficiency_shift"]
+        self.assertEqual((shift["down"], shift["up"]), (38, 8))
+        self.assertEqual(shift["sign_test_two_sided_p"], 9.25e-06)
 
     def test_invalid_designs_are_rejected(self):
         from wine_judgment_lab.gate import gate_audit
