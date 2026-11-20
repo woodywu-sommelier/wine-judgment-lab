@@ -42,6 +42,13 @@
   evaluation and uncertainty; the modal baseline remains the reference.
 - [ ] Run the pilot and publish reviewed permitted data and negative findings.
 
+### Sufficiency gate
+
+- [x] Offline gate audit: qualification by cutoff and condition, repeat instability, near-cutoff counts.
+- [ ] Add gate qualification at fixed cutoffs as an endpoint in the registered pilot protocol.
+- [ ] Include a neutral invented-name condition alongside named and masked.
+- [ ] Synthetic name-sensitivity benchmark (fictional entities only) after a repeated run confirms the effect.
+
 ## Later, if evidence justifies it
 
 - [ ] Compare expert-only, model-only and expert-assisted judgments.

@@ -10,6 +10,7 @@ from . import __version__
 from .audit import evaluate_baseline
 from .analyst import validate_assessments, check_reference_ready
 from .experiment import analyze, build_trials, digest
+from .gate import DEFAULT_CUTOFFS, gate_audit
 
 DATA = Path(__file__).with_name("data")
 
@@ -110,6 +111,15 @@ def main(argv=None):
     reference = commands.add_parser("check-reference", help="offline private adjudication/timing readiness check, not scoring")
     reference.add_argument("--dossiers", required=True); reference.add_argument("--rubric", required=True)
     reference.add_argument("--first-run-at", required=True); reference.add_argument("--out", type=Path, required=True)
+    gate = commands.add_parser("gate", help="audit who qualifies under a sufficiency cutoff, by condition")
+    gate.add_argument("--judgments", required=True); gate.add_argument("--out", type=Path, required=True)
+    gate.add_argument("--reference-condition", default="named")
+    gate.add_argument("--cutoffs", default=",".join(f"{c:.2f}" for c in DEFAULT_CUTOFFS))
+    gate.add_argument("--band", type=float, default=0.03, help="near-cutoff band around each cutoff")
+    gate.add_argument("--leaks", help="JSON object: entity_id -> true if the dossier leaks identity")
+    gate.add_argument("--external-ranks", help="JSON object: entity_id -> rank (1 = best), e.g. a peer vote")
+    gate.add_argument("--allow-single-repeat", action="store_true",
+                      help="exploratory only: accept one repeat (no noise comparator)")
     args = parser.parse_args(argv)
     try:
         if args.command == "demo":
@@ -124,6 +134,13 @@ def main(argv=None):
             build_trials(rows, rubric, seed=0)  # full schema validation, no files or model client
             result = check_reference_ready(rows, {q["criterion_id"] for q in rubric["questions"]},
                                            first_run_at=args.first_run_at)
+            _write(args.out, result)
+        elif args.command == "gate":
+            cutoffs = [float(c) for c in args.cutoffs.split(",") if c.strip()]
+            result = gate_audit(_jsonl(args.judgments), reference=args.reference_condition, cutoffs=cutoffs,
+                                band=args.band, min_repeats=1 if args.allow_single_repeat else 2,
+                                leaks=_json(args.leaks) if args.leaks else None,
+                                external_ranks=_json(args.external_ranks) if args.external_ranks else None)
             _write(args.out, result)
         else:
             result = evaluate_baseline(_json(args.rows), seed=args.seed); _write(args.out, result)
