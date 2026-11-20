@@ -181,3 +181,14 @@ tiny regions with fewer than two total estates fail. Stratification can change
 the overall test share, especially for small classes. Macro-F1 averages labels present in truth or predictions, as named
 in its output. Always report regional class/sample counts; tiny demos do not
 establish predictive performance.
+
+## Gate-audit judgments JSONL
+
+One object per entity, condition and repeat: `entity_id`, `condition`,
+`run_id`, integer `repeat_id`, finite `score`, `sufficiency` in [0, 1],
+`provider`, `model` and boolean `synthetic`. The design must be complete
+(every entity × condition × repeat) and use one provider/model. Two or more
+repeats unless `--allow-single-repeat` is set for exploratory data. Optional
+JSON objects: `--leaks` (entity → boolean) and `--external-ranks`
+(entity → rank, 1 = best). See `docs/gate-audit.md`.
+

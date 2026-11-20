@@ -17,6 +17,12 @@ trial output uses config v0.3; the published v0.1 and v0.2 files remain frozen.
 - Migrate ambiguous fictional records to partial/conflicting assessments and
   provenance-only item tags. The toy simulator reads completeness, not provenance
   or reference labels. Original v0.1 and v0.2 public trial bytes are unchanged.
+- Sufficiency-gate audit (`gate` command, `docs/gate-audit.md`): who
+  qualifies at each cutoff by identity condition, flips against the reference
+  condition, near-cutoff counts, gate instability across repeats, sufficiency
+  shift with a descriptive sign test, score agreement, leaders, optional clean
+  subset and external-rank agreement. Fictional example in
+  `data/gate-example.jsonl`; aggregates only for publication.
 - Feasibility-ledger instructions for 3–5 real estates; no real collection,
   inference, reference-agreement scoring or registration is included.
 

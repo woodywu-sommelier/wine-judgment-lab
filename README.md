@@ -103,6 +103,20 @@ provenance locally for independent verification. A future live adapter must
 report actual provider/model version, token use, cost and failures with a
 preapproved spending cap.
 
+### Sufficiency-gate audit
+
+When a ranking only scores entries with "enough" evidence, that cutoff decides
+who appears at all. Audit it across conditions and repeats:
+
+```bash
+python3 -m wine_judgment_lab gate \
+  --judgments wine_judgment_lab/data/gate-example.jsonl \
+  --out runs/gate.json
+```
+
+See [docs/gate-audit.md](docs/gate-audit.md) for the input format, outputs and
+publication rules.
+
 ## Why this exists
 
 Wine assessment combines sensory observations, evidence, judgment and
